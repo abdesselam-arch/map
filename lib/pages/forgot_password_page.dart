@@ -12,7 +12,11 @@ class ForgotPassword extends StatefulWidget {
 
 class _ForgotPasswordState extends State<ForgotPassword> {
   final emailController = TextEditingController();
-  
+
+  //final usersCollection = FirebaseFirestore.instance.collection("Users");
+
+  //final currentUser = FirebaseAuth.instance.currentUser!;
+
   @override
   void dispose() {
     // TODO: implement dispose
