@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
@@ -21,6 +23,32 @@ class _SearchPageState extends State<SearchPage> {
   bool isVisible = false;
   List<LatLng> routpoints = [const LatLng(52.05884, -1.345583)];
 
+  // user instance
+  final currentUser = FirebaseAuth.instance.currentUser!;
+  // collection instance
+  CollectionReference requests =
+      FirebaseFirestore.instance.collection('Requests');
+
+  List<String> purposeOptions = [
+    'Purpose',
+    'Travel',
+    'Education',
+    'Medical Condition',
+    'Work',
+    'Vacation'
+  ];
+  String selectedPurpose = 'Purpose';
+
+  void storeRequest() async {
+    await requests.add({
+      'UserEmail': currentUser.email,
+      'Departure': start.text,
+      'Arrival': end.text,
+      'Purpose': selectedPurpose,
+      'TimeStamp': Timestamp.now(),
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,11 +59,34 @@ class _SearchPageState extends State<SearchPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                myInput(controler: start, hint: translation(context).departure),
+                myInput(
+                  controler: start,
+                  hint: translation(context).departure,
+                ),
                 const SizedBox(
                   height: 15,
                 ),
-                myInput(controler: end, hint: translation(context).arrival),
+                myInput(
+                  controler: end,
+                  hint: translation(context).arrival,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                DropdownButton<String>(
+                  value: selectedPurpose,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedPurpose = newValue!;
+                    });
+                  },
+                  items: purposeOptions.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
                 const SizedBox(
                   height: 20,
                 ),
@@ -43,6 +94,8 @@ class _SearchPageState extends State<SearchPage> {
                     style:
                         ElevatedButton.styleFrom(backgroundColor: Colors.black),
                     onPressed: () async {
+                      storeRequest();
+
                       List<Location> start_l =
                           await locationFromAddress(start.text);
                       List<Location> end_l =

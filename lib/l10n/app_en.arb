@@ -22,5 +22,11 @@
     "arrival": "Arrival",
     "emailReset": "Enter your email so we can send you a password reset link",
     "resetPassword": "Reset password",
-    "forgotPassButton": "Forgot password?"
+    "forgotPassButton": "Forgot password?",
+    "purposeField": "Purpose",
+    "travel": "Travel",
+    "education": "Education",
+    "medical": "Medical condition",
+    "work": "Work",
+    "vacation": "Vacation"
 }

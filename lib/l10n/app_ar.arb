@@ -22,5 +22,11 @@
     "arrival": "موقع الوصول",
     "emailReset": "أدخل بريدك الإلكتروني حتى نتمكن من إرسال رابط إعادة تعيين كلمة المرور إليك",
     "resetPassword": "إعادة تعيين كلمة المرور",
-    "forgotPassButton": "نسيت كلمة المرو?"
+    "forgotPassButton": "نسيت كلمة المرو?",
+    "purposeField": "السبب",
+    "travel": "رحلة",
+    "education": "دراسة",
+    "medical": "اسباب طبية",
+    "work": "عمل",
+    "vacation": "عطلة"
 }
