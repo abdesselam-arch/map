@@ -2,13 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map/plugin_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:map/classes/language_constants.dart';
 import 'dart:convert';
 import 'package:map/components/input_field.dart';
+import 'package:map/components/recommended_tem.dart';
+import 'package:map/pages/response_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -21,6 +22,8 @@ class _SearchPageState extends State<SearchPage> {
   final start = TextEditingController();
   final end = TextEditingController();
   bool isVisible = false;
+  double distanceKM = 0;
+  double durationMin = 0;
   List<LatLng> routpoints = [const LatLng(52.05884, -1.345583)];
 
   // user instance
@@ -49,6 +52,19 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  String getCurrentTime() {
+    DateTime now = DateTime.now();
+    String formattedTime = DateFormat('HH:mm:ss').format(now);
+    return formattedTime;
+  }
+
+  String calculateArrivalTime(double durationMin) {
+    DateTime now = DateTime.now();
+    DateTime arrivalTime = now.add(Duration(minutes: durationMin.toInt()));
+    String formattedArrivalTime = DateFormat('HH:mm:ss').format(arrivalTime);
+    return formattedArrivalTime;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,6 +75,9 @@ class _SearchPageState extends State<SearchPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
+                const SizedBox(
+                  height: 20,
+                ),
                 myInput(
                   controler: start,
                   hint: translation(context).departure,
@@ -108,12 +127,22 @@ class _SearchPageState extends State<SearchPage> {
 
                       var url = Uri.parse(
                           'http://router.project-osrm.org/route/v1/driving/$v2,$v1;$v4,$v3?steps=true&annotations=true&geometries=geojson&overview=full');
+
                       var response = await http.get(url);
                       print(response.body);
                       setState(() {
                         routpoints = [];
                         var ruter = jsonDecode(response.body)['routes'][0]
                             ['geometry']['coordinates'];
+
+                        final distance =
+                            jsonDecode(response.body)['routes'][0]['distance'];
+                        distanceKM = distance / 1000;
+
+                        final duration =
+                            jsonDecode(response.body)['routes'][0]['duration'];
+                        durationMin = duration / 60;
+
                         for (int i = 0; i < ruter.length; i++) {
                           var reep = ruter[i].toString();
                           reep = reep.replaceAll("[", "");
@@ -124,7 +153,9 @@ class _SearchPageState extends State<SearchPage> {
                               double.parse(lat1[1]), double.parse(long1[0])));
                         }
                         isVisible = !isVisible;
-                        print(routpoints);
+                        //print(routpoints);
+                        print('trip distance : $distanceKM km');
+                        print('trip duration : $durationMin mins');
                       });
                     },
                     child: Text(translation(context).submit)),
@@ -132,31 +163,23 @@ class _SearchPageState extends State<SearchPage> {
                   height: 10,
                 ),
                 SizedBox(
-                  height: 500,
+                  height: 180,
                   width: 400,
                   child: Visibility(
                     visible: isVisible,
-                    child: FlutterMap(
-                      options: MapOptions(
-                        center: routpoints[0],
-                        zoom: 10,
-                      ),
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.example.app',
-                        ),
-                        PolylineLayer(
-                          polylineCulling: false,
-                          polylines: [
-                            Polyline(
-                                points: routpoints,
-                                color: Colors.blue,
-                                strokeWidth: 9)
-                          ],
-                        )
-                      ],
+                    child: RecommendedItem(
+                      distance: distanceKM,
+                      departure_time: getCurrentTime(),
+                      arrival_time: calculateArrivalTime(durationMin),
+                      travelMean: "By Car",
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ResponsePage(routpoints: routpoints), 
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
