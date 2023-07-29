@@ -65,6 +65,46 @@ class _SearchPageState extends State<SearchPage> {
     return formattedArrivalTime;
   }
 
+  Future<void> getRoute(String travelMode) async {
+    List<Location> start_l = await locationFromAddress(start.text);
+    List<Location> end_l = await locationFromAddress(end.text);
+
+    var v1 = start_l[0].latitude;
+    var v2 = start_l[0].longitude;
+    var v3 = end_l[0].latitude;
+    var v4 = end_l[0].longitude;
+
+    var url = Uri.parse(
+        'http://router.project-osrm.org/route/v1/$travelMode/$v2,$v1;$v4,$v3?steps=true&annotations=true&geometries=geojson&overview=full');
+
+    var response = await http.get(url);
+    print(response.body);
+    setState(() {
+      routpoints = [];
+      var ruter =
+          jsonDecode(response.body)['routes'][0]['geometry']['coordinates'];
+
+      final distance = jsonDecode(response.body)['routes'][0]['distance'];
+      distanceKM = distance / 1000;
+
+      final duration = jsonDecode(response.body)['routes'][0]['duration'];
+      durationMin = duration / 60;
+
+      for (int i = 0; i < ruter.length; i++) {
+        var reep = ruter[i].toString();
+        reep = reep.replaceAll("[", "");
+        reep = reep.replaceAll("]", "");
+        var lat1 = reep.split(',');
+        var long1 = reep.split(",");
+        routpoints.add(LatLng(double.parse(lat1[1]), double.parse(long1[0])));
+      }
+      isVisible = !isVisible;
+      //print(routpoints);
+      print('trip distance : $distanceKM km');
+      print('trip duration : $durationMin mins');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,49 +154,7 @@ class _SearchPageState extends State<SearchPage> {
                         ElevatedButton.styleFrom(backgroundColor: Colors.black),
                     onPressed: () async {
                       storeRequest();
-
-                      List<Location> start_l =
-                          await locationFromAddress(start.text);
-                      List<Location> end_l =
-                          await locationFromAddress(end.text);
-
-                      var v1 = start_l[0].latitude;
-                      var v2 = start_l[0].longitude;
-                      var v3 = end_l[0].latitude;
-                      var v4 = end_l[0].longitude;
-
-                      var url = Uri.parse(
-                          'http://router.project-osrm.org/route/v1/driving/$v2,$v1;$v4,$v3?steps=true&annotations=true&geometries=geojson&overview=full');
-
-                      var response = await http.get(url);
-                      print(response.body);
-                      setState(() {
-                        routpoints = [];
-                        var ruter = jsonDecode(response.body)['routes'][0]
-                            ['geometry']['coordinates'];
-
-                        final distance =
-                            jsonDecode(response.body)['routes'][0]['distance'];
-                        distanceKM = distance / 1000;
-
-                        final duration =
-                            jsonDecode(response.body)['routes'][0]['duration'];
-                        durationMin = duration / 60;
-
-                        for (int i = 0; i < ruter.length; i++) {
-                          var reep = ruter[i].toString();
-                          reep = reep.replaceAll("[", "");
-                          reep = reep.replaceAll("]", "");
-                          var lat1 = reep.split(',');
-                          var long1 = reep.split(",");
-                          routpoints.add(LatLng(
-                              double.parse(lat1[1]), double.parse(long1[0])));
-                        }
-                        isVisible = !isVisible;
-                        //print(routpoints);
-                        print('trip distance : $distanceKM km');
-                        print('trip duration : $durationMin mins');
-                      });
+                      await getRoute('driving');
                     },
                     child: Text(translation(context).submit)),
                 const SizedBox(
@@ -171,12 +169,13 @@ class _SearchPageState extends State<SearchPage> {
                       distance: distanceKM,
                       departure_time: getCurrentTime(),
                       arrival_time: calculateArrivalTime(durationMin),
-                      travelMean: "By Car",
+                      travelMean: "By car",
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ResponsePage(routpoints: routpoints), 
+                            builder: (context) =>
+                                ResponsePage(routpoints: routpoints),
                           ),
                         );
                       },
