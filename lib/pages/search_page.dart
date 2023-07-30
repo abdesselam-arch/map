@@ -169,7 +169,7 @@ class _SearchPageState extends State<SearchPage> {
                       distance: distanceKM,
                       departure_time: getCurrentTime(),
                       arrival_time: calculateArrivalTime(durationMin),
-                      travelMean: "By car",
+                      travelMean: translation(context).byCar,
                       onPressed: () {
                         Navigator.push(
                           context,

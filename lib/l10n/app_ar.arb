@@ -28,5 +28,13 @@
     "education": "دراسة",
     "medical": "اسباب طبية",
     "work": "عمل",
-    "vacation": "عطلة"
+    "vacation": "عطلة",
+    "byCar": "بالسيارة",
+    "distance": " :المسافة",
+    "depTime": " :وقت المغادرة",
+    "arrTime": " :وقت الوصول",
+    "travelMean": " :وسيلة نقل",
+    "weatherInformations": " :معلومات عن الطقس",
+    "temp": " :درجة الحرارة",
+    "descMeteo": " :وصف الطقس"
 }

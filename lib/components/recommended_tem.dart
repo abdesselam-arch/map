@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:map/classes/language_constants.dart';
 
 class RecommendedItem extends StatelessWidget {
   final double distance;
@@ -40,15 +41,15 @@ class RecommendedItem extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    const Text(
-                      'Distance: ',
-                      style: TextStyle(
+                    Text(
+                      translation(context).distance,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
                     ),
                     Text(
-                      '$distance',
+                      '$distance KM',
                       style: const TextStyle(
                         fontSize: 13,
                       ),
@@ -56,9 +57,9 @@ class RecommendedItem extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    const Text(
-                      'Departure time: ',
-                      style: TextStyle(
+                    Text(
+                      translation(context).depTime,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -72,9 +73,9 @@ class RecommendedItem extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    const Text(
-                      'Arrival time: ',
-                      style: TextStyle(
+                    Text(
+                      translation(context).arrTime,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -88,9 +89,9 @@ class RecommendedItem extends StatelessWidget {
                     const SizedBox(
                       height: 10,
                     ),
-                    const Text(
-                      'Travel Mean: ',
-                      style: TextStyle(
+                    Text(
+                      translation(context).travelMean,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),

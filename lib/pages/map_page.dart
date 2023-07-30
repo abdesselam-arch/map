@@ -4,6 +4,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:map/classes/language_constants.dart';
+
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
 
@@ -98,17 +100,17 @@ class _MapPageState extends State<MapPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Weather Information',
-                              style: TextStyle(
+                            Text(
+                              translation(context).weatherInformations,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text('Temperature: ${temperature.toStringAsFixed(1)}°C'),
+                            Text('${translation(context).temp} ${temperature.toStringAsFixed(1)}°C'),
                             const SizedBox(height: 4),
-                            Text('Description: $weatherDescription'),
+                            Text('${translation(context).descMeteo} $weatherDescription'),
                             const SizedBox(height: 4),
                             if (iconUrl.isNotEmpty)
                               Image.network(

@@ -28,5 +28,13 @@
     "education": "Education",
     "medical": "Medical condition",
     "work": "Work",
-    "vacation": "Vacation"
+    "vacation": "Vacation",
+    "byCar": "By car",
+    "distance": "Distance: ",
+    "depTime": "Departure time: ",
+    "arrTime": "Arrival time: ",
+    "travelMean": "Travel mean: ",
+    "weatherInformations": "Weather informations",
+    "temp": "Temperature: ",
+    "descMeteo": "Description: "
 }
