@@ -39,6 +39,30 @@ class _ResponsePageState extends State<ResponsePage> {
             ),
           ],
         ),
+        MarkerLayer(
+          markers: [
+            Marker(
+              width: 40,
+              height: 40,
+              point: routpoints[0], // Departure point
+              builder: (ctx) => Container(
+                child: const Icon(
+                  Icons.location_on,
+                  color: Colors.green,
+                ),
+              ),
+            ),
+            Marker(
+              width: 40,
+              height: 40,
+              point: routpoints[routpoints.length - 1], // Destination point
+              builder: (ctx) => const Icon(
+                Icons.location_on,
+                color: Colors.red,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
