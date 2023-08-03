@@ -32,6 +32,19 @@ class _SearchPageState extends State<SearchPage> {
   CollectionReference requests =
       FirebaseFirestore.instance.collection('Requests');
 
+  // Create variables for each travel mode
+  double distanceCar = 0;
+  double durationCar = 0;
+  List<LatLng> routpointsCar = [const LatLng(52.05884, -1.345583)];
+
+  double distanceBike = 0;
+  double durationBike = 0;
+  List<LatLng> routpointsBike = [const LatLng(52.05884, -1.345583)];
+
+  double distanceFoot = 0;
+  double durationFoot = 0;
+  List<LatLng> routpointsFoot = [const LatLng(52.05884, -1.345583)];
+
   List<String> purposeOptions = [
     'Purpose',
     'Travel',
@@ -64,6 +77,8 @@ class _SearchPageState extends State<SearchPage> {
     String formattedArrivalTime = DateFormat('HH:mm:ss').format(arrivalTime);
     return formattedArrivalTime;
   }
+
+  /*
 
   Future<void> getRoute(String travelMode) async {
     List<Location> start_l = await locationFromAddress(start.text);
@@ -105,6 +120,98 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  */
+
+  Future<void> getRoute(String travelMode) async {
+    List<Location> start_l = await locationFromAddress(start.text);
+    List<Location> end_l = await locationFromAddress(end.text);
+
+    var v1 = start_l[0].latitude;
+    var v2 = start_l[0].longitude;
+    var v3 = end_l[0].latitude;
+    var v4 = end_l[0].longitude;
+
+    String apiKey =
+        "852f53ee-0cce-49c4-9ec5-4d8dfb12fa5d"; // Replace this with your GraphHopper API key
+    var url = Uri.parse(
+        'https://graphhopper.com/api/1/route?point=$v1,$v2&point=$v3,$v4&vehicle=$travelMode&key=$apiKey&type=json&points_encoded=false');
+
+    var response = await http.get(url);
+
+    print('Response Status Code: ${response.statusCode}');
+    print('Response Body: ${response.body}');
+
+    Map<String, dynamic> data = jsonDecode(response.body);
+    var paths = data['paths'];
+
+    var path = paths[0];
+    var distance = path['distance'];
+    var duration = path['time'];
+
+    List<LatLng> coordinates = [];
+    List<dynamic> rawCoordinates = path['points']['coordinates'];
+
+    for (var coord in rawCoordinates) {
+      double latitude = coord[1];
+      double longitude = coord[0];
+      coordinates.add(LatLng(latitude, longitude));
+    }
+
+    routpoints = coordinates;
+
+    isVisible = true;
+
+    print(routpoints);
+    distanceKM = distance / 1000;
+    print("distance of trip: $distanceKM km");
+    durationMin = duration / 60000;
+    print("duration of trip: $durationMin mins");
+  }
+
+  // Helper function to get route for a specific travel mode
+  Future<void> getRouteForTravelMode(String travelMode) async {
+    // Call the getRoute() method with the specified travelMode
+    await getRoute(travelMode);
+
+    isVisible = true;
+
+    // Update the variables based on the travelMode
+    if (travelMode == 'car') {
+      distanceCar = distanceKM;
+      durationCar = durationMin;
+      routpointsCar = List.from(routpoints);
+    } else if (travelMode == 'bike') {
+      distanceBike = distanceKM;
+      durationBike = durationMin;
+      routpointsBike = List.from(routpoints);
+    } else if (travelMode == 'foot') {
+      distanceFoot = distanceKM;
+      durationFoot = durationMin;
+      routpointsFoot = List.from(routpoints);
+    }
+  }
+
+  List<String> departureSuggestions = [];
+  List<String> arrivalSuggestions = [];
+
+  // The getAutoCompletionSuggestions function remains the same as provided in the question.
+  // It fetches auto-completion suggestions using Nominatim.
+  Future<List<String>> getAutoCompletionSuggestions(String input) async {
+    final baseUrl = 'https://nominatim.openstreetmap.org/search';
+    final query =
+        '?q=${input.replaceAll(' ', '%20')}&format=json&addressdetails=1';
+
+    final response = await http.get(Uri.parse(baseUrl + query));
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      final List<String> suggestions =
+          data.map((place) => place['display_name'] as String).toList();
+      return suggestions;
+    } else {
+      throw Exception('Failed to fetch auto-completion suggestions');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,6 +225,63 @@ class _SearchPageState extends State<SearchPage> {
                 const SizedBox(
                   height: 20,
                 ),
+                /*
+                TypeAheadField(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    controller: start,
+                    decoration: InputDecoration(
+                      hintText: translation(context).departure,
+                    ),
+                  ),
+                  suggestionsCallback: (pattern) async {
+                    // Fetch auto-completion suggestions for departure
+                    return await getAutoCompletionSuggestions(pattern);
+                  },
+                  itemBuilder: (context, suggestion) {
+                    return ListTile(
+                      title: Text(suggestion.toString()),
+                    );
+                  },
+                  onSuggestionSelected: (suggestion) {
+                    start.text = suggestion.toString();
+                  },
+                  // Customize the suggestion box appearance
+                  suggestionsBoxDecoration: SuggestionsBoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                    elevation: 4.0,
+                  ),
+                ),*/
+
+                /*
+                Autocomplete(
+                  optionsBuilder: (TextEditingValue textEditingValue) {
+                    if (textEditingValue.text == '') {
+                      return const Iterable<String>.empty();
+                    } else {
+                      return departureSuggestions.where((String option) {
+                        return option
+                            .toLowerCase()
+                            .contains(textEditingValue.text.toLowerCase());
+                      });
+                    }
+                  },
+                  onSelected: (String selection) {
+                    start.text = selection;
+                  },
+                  fieldViewBuilder: (
+                    BuildContext context,
+                    TextEditingController fieldController,
+                    FocusNode focusNode,
+                    VoidCallback onFieldSubmitted,
+                  ) {
+                    return myInput(
+                      controler: start,
+                      hint: translation(context).departure,
+                    );
+                  },
+                ),
+                */
+
                 myInput(
                   controler: start,
                   hint: translation(context).departure,
@@ -125,6 +289,58 @@ class _SearchPageState extends State<SearchPage> {
                 const SizedBox(
                   height: 15,
                 ),
+
+                /*// Search input for arrival with auto-completion
+                TypeAheadField(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    controller: end,
+                    decoration: InputDecoration(
+                      hintText: translation(context).arrival,
+                    ),
+                  ),
+                  suggestionsCallback: (pattern) async {
+                    // Fetch auto-completion suggestions for arrival
+                    return await getAutoCompletionSuggestions(pattern);
+                  },
+                  itemBuilder: (context, suggestion) {
+                    return ListTile(
+                      title: Text(suggestion.toString()),
+                    );
+                  },
+                  onSuggestionSelected: (suggestion) {
+                    end.text = suggestion.toString();
+                  },
+                ),*/
+
+                /*
+                Autocomplete(
+                  optionsBuilder: (TextEditingValue textEditingValue) {
+                    if (textEditingValue.text == '') {
+                      return const Iterable<String>.empty();
+                    } else {
+                      return arrivalSuggestions.where((String option) {
+                        return option
+                            .toLowerCase()
+                            .contains(textEditingValue.text.toLowerCase());
+                      });
+                    }
+                  },
+                  onSelected: (String selection) {
+                    end.text = selection;
+                  },
+                  fieldViewBuilder: (
+                    BuildContext context,
+                    TextEditingController fieldController,
+                    FocusNode focusNode,
+                    VoidCallback onFieldSubmitted,
+                  ) {
+                    return myInput(
+                      controler: end,
+                      hint: translation(context).arrival,
+                    );
+                  },
+                ),
+                */
                 myInput(
                   controler: end,
                   hint: translation(context).arrival,
@@ -154,31 +370,81 @@ class _SearchPageState extends State<SearchPage> {
                         ElevatedButton.styleFrom(backgroundColor: Colors.black),
                     onPressed: () async {
                       storeRequest();
-                      await getRoute('driving');
+                      // Execute getRoute() for different travel modes
+                      await getRouteForTravelMode('car'); // Car
+                      await getRouteForTravelMode('bike'); // Bike
+                      await getRouteForTravelMode('foot'); // Foot
                     },
                     child: Text(translation(context).submit)),
                 const SizedBox(
                   height: 10,
                 ),
                 SizedBox(
-                  height: 180,
+                  height: 600,
                   width: 400,
                   child: Visibility(
                     visible: isVisible,
-                    child: RecommendedItem(
-                      distance: distanceKM,
-                      departure_time: getCurrentTime(),
-                      arrival_time: calculateArrivalTime(durationMin),
-                      travelMean: translation(context).byCar,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ResponsePage(routpoints: routpoints),
-                          ),
-                        );
-                      },
+                    child: Column(
+                      children: [
+                        // RecommendedItem for Car
+                        RecommendedItem(
+                          distance: distanceCar,
+                          departure_time: getCurrentTime(),
+                          arrival_time: calculateArrivalTime(durationCar),
+                          travelMean: translation(context).byCar,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ResponsePage(routpoints: routpointsCar),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        // RecommendedItem for Bike
+                        RecommendedItem(
+                          distance: distanceBike,
+                          departure_time: getCurrentTime(),
+                          arrival_time: calculateArrivalTime(durationBike),
+                          travelMean: "By bike",
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ResponsePage(routpoints: routpointsBike),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        // RecommendedItem for Foot
+                        RecommendedItem(
+                          distance: distanceFoot,
+                          departure_time: getCurrentTime(),
+                          arrival_time: calculateArrivalTime(durationFoot),
+                          travelMean: "On foot",
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ResponsePage(routpoints: routpointsFoot),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
