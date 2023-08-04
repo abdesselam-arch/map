@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:map/classes/language_constants.dart';
-import 'dart:convert';
 import 'package:map/components/input_field.dart';
+import 'dart:convert';
 import 'package:map/components/recommended_tem.dart';
 import 'package:map/pages/response_page.dart';
 
@@ -141,39 +141,39 @@ class _SearchPageState extends State<SearchPage> {
     print('Response Status Code: ${response.statusCode}');
     print('Response Body: ${response.body}');
 
-    Map<String, dynamic> data = jsonDecode(response.body);
-    var paths = data['paths'];
+    setState(() {
+      isVisible = true;
 
-    var path = paths[0];
-    var distance = path['distance'];
-    var duration = path['time'];
+      Map<String, dynamic> data = jsonDecode(response.body);
+      var paths = data['paths'];
 
-    List<LatLng> coordinates = [];
-    List<dynamic> rawCoordinates = path['points']['coordinates'];
+      var path = paths[0];
+      var distance = path['distance'];
+      var duration = path['time'];
 
-    for (var coord in rawCoordinates) {
-      double latitude = coord[1];
-      double longitude = coord[0];
-      coordinates.add(LatLng(latitude, longitude));
-    }
+      List<LatLng> coordinates = [];
+      List<dynamic> rawCoordinates = path['points']['coordinates'];
 
-    routpoints = coordinates;
+      for (var coord in rawCoordinates) {
+        double latitude = coord[1];
+        double longitude = coord[0];
+        coordinates.add(LatLng(latitude, longitude));
+      }
 
-    isVisible = true;
+      routpoints = coordinates;
 
-    print(routpoints);
-    distanceKM = distance / 1000;
-    print("distance of trip: $distanceKM km");
-    durationMin = duration / 60000;
-    print("duration of trip: $durationMin mins");
+      print(routpoints);
+      distanceKM = distance / 1000;
+      print("distance of trip: $distanceKM km");
+      durationMin = duration / 60000;
+      print("duration of trip: $durationMin mins");
+    });
   }
 
   // Helper function to get route for a specific travel mode
   Future<void> getRouteForTravelMode(String travelMode) async {
     // Call the getRoute() method with the specified travelMode
     await getRoute(travelMode);
-
-    isVisible = true;
 
     // Update the variables based on the travelMode
     if (travelMode == 'car') {
@@ -191,12 +191,12 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  List<String> departureSuggestions = [];
-  List<String> arrivalSuggestions = [];
+  List<String> startSuggestions = [];
+  List<String> endSuggestions = [];
 
   // The getAutoCompletionSuggestions function remains the same as provided in the question.
   // It fetches auto-completion suggestions using Nominatim.
-  Future<List<String>> getAutoCompletionSuggestions(String input) async {
+  Future<List<String>> _getAutoCompletionSuggestions(String input) async {
     final baseUrl = 'https://nominatim.openstreetmap.org/search';
     final query =
         '?q=${input.replaceAll(' ', '%20')}&format=json&addressdetails=1';
@@ -210,6 +210,35 @@ class _SearchPageState extends State<SearchPage> {
     } else {
       throw Exception('Failed to fetch auto-completion suggestions');
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    start.addListener(onStartTextChanged);
+    end.addListener(onEndTextChanged);
+  }
+
+  void onStartTextChanged() {
+    _updateStartSuggestions(start.text);
+  }
+
+  void onEndTextChanged() {
+    _updateEndSuggestions(end.text);
+  }
+
+  Future<void> _updateStartSuggestions(String input) async {
+    List<String> suggestions = await _getAutoCompletionSuggestions(input);
+    setState(() {
+      startSuggestions = suggestions;
+    });
+  }
+
+  Future<void> _updateEndSuggestions(String input) async {
+    List<String> suggestions = await _getAutoCompletionSuggestions(input);
+    setState(() {
+      endSuggestions = suggestions;
+    });
   }
 
   @override
