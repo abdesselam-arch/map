@@ -7,6 +7,8 @@ class RecommendedItem extends StatelessWidget {
   final String arrival_time;
   final String travelMean;
   final void Function()? onPressed;
+  final Color backgroundColor;
+  final Color textColor;
 
   const RecommendedItem({
     super.key,
@@ -15,13 +17,15 @@ class RecommendedItem extends StatelessWidget {
     required this.arrival_time,
     required this.travelMean,
     required this.onPressed,
+    required this.backgroundColor,
+    required this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
       ),
       padding: const EdgeInsets.only(
@@ -43,15 +47,17 @@ class RecommendedItem extends StatelessWidget {
                     ),
                     Text(
                       translation(context).distance,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
+                        color: textColor,
                       ),
                     ),
                     Text(
                       '$distance KM',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
+                        color: textColor,
                       ),
                     ),
                     const SizedBox(
@@ -59,14 +65,16 @@ class RecommendedItem extends StatelessWidget {
                     ),
                     Text(
                       translation(context).depTime,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
+                        color: textColor,
                         fontSize: 13,
                       ),
                     ),
                     Text(
                       departure_time,
-                      style: const TextStyle(
+                      style: TextStyle(
+                        color: textColor,
                         fontSize: 13,
                       ),
                     ),
@@ -75,14 +83,16 @@ class RecommendedItem extends StatelessWidget {
                     ),
                     Text(
                       translation(context).arrTime,
-                      style: const TextStyle(
+                      style: TextStyle(
+                        color: textColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
                     ),
                     Text(
                       arrival_time,
-                      style: const TextStyle(
+                      style: TextStyle(
+                        color: textColor,
                         fontSize: 13,
                       ),
                     ),
@@ -91,14 +101,16 @@ class RecommendedItem extends StatelessWidget {
                     ),
                     Text(
                       translation(context).travelMean,
-                      style: const TextStyle(
+                      style: TextStyle(
+                        color: textColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
                     ),
                     Text(
                       travelMean,
-                      style: const TextStyle(
+                      style: TextStyle(
+                        color: textColor,
                         fontSize: 13,
                       ),
                     ),
@@ -109,7 +121,7 @@ class RecommendedItem extends StatelessWidget {
                 onPressed: onPressed,
                 icon: Icon(
                   Icons.map_outlined,
-                  color: Colors.grey.shade600,
+                  color: textColor,
                 ),
               ),
             ],

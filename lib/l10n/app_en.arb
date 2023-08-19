@@ -30,6 +30,8 @@
     "work": "Work",
     "vacation": "Vacation",
     "byCar": "By car",
+    "byBike": "By bike",
+    "onFoot": "On foot",
     "distance": "Distance: ",
     "depTime": "Departure time: ",
     "arrTime": "Arrival time: ",

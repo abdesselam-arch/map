@@ -45,6 +45,30 @@ class _SearchPageState extends State<SearchPage> {
   double durationFoot = 0;
   List<LatLng> routpointsFoot = [const LatLng(52.05884, -1.345583)];
 
+  // function to determine the best travelMode (might be deleted later or modified)
+
+  String determineBestTravelMode() {
+    double minDistance = double.infinity;
+    String bestTravelMode = '';
+
+    if (distanceFoot < minDistance) {
+      minDistance = distanceFoot;
+      bestTravelMode = translation(context).onFoot;
+    }
+
+    if (distanceCar < minDistance) {
+      minDistance = distanceCar;
+      bestTravelMode = translation(context).byCar;
+    }
+
+    if (distanceBike < minDistance) {
+      minDistance = distanceBike;
+      bestTravelMode = translation(context).byBike;
+    }
+
+    return bestTravelMode;
+  }
+
   List<String> purposeOptions = [
     'Purpose',
     'Travel',
@@ -132,7 +156,7 @@ class _SearchPageState extends State<SearchPage> {
     var v4 = end_l[0].longitude;
 
     String apiKey =
-        "852f53ee-0cce-49c4-9ec5-4d8dfb12fa5d"; // Replace this with your GraphHopper API key
+        "0fe097c8-8c66-402d-90fb-6cb9ebc27108"; // Replace this with your GraphHopper API key
     var url = Uri.parse(
         'https://graphhopper.com/api/1/route?point=$v1,$v2&point=$v3,$v4&vehicle=$travelMode&key=$apiKey&type=json&points_encoded=false');
 
@@ -254,20 +278,22 @@ class _SearchPageState extends State<SearchPage> {
                 const SizedBox(
                   height: 20,
                 ),
-                /*
+/*
                 TypeAheadField(
                   textFieldConfiguration: TextFieldConfiguration(
                     controller: start,
                     decoration: InputDecoration(
-                      hintText: translation(context).departure,
+                      labelText: translation(context).departure,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   suggestionsCallback: (pattern) async {
                     // Fetch auto-completion suggestions for departure
-                    return await getAutoCompletionSuggestions(pattern);
+                    return await _getAutoCompletionSuggestions(pattern);
                   },
                   itemBuilder: (context, suggestion) {
                     return ListTile(
+                      leading: const Icon(Icons.location_on),
                       title: Text(suggestion.toString()),
                     );
                   },
@@ -279,15 +305,14 @@ class _SearchPageState extends State<SearchPage> {
                     borderRadius: BorderRadius.circular(8.0),
                     elevation: 4.0,
                   ),
-                ),*/
+                ),
 
-                /*
-                Autocomplete(
+                Autocomplete<String>(
                   optionsBuilder: (TextEditingValue textEditingValue) {
                     if (textEditingValue.text == '') {
                       return const Iterable<String>.empty();
                     } else {
-                      return departureSuggestions.where((String option) {
+                      return startSuggestions.where((String option) {
                         return option
                             .toLowerCase()
                             .contains(textEditingValue.text.toLowerCase());
@@ -309,8 +334,7 @@ class _SearchPageState extends State<SearchPage> {
                     );
                   },
                 ),
-                */
-
+*/
                 myInput(
                   controler: start,
                   hint: translation(context).departure,
@@ -318,36 +342,37 @@ class _SearchPageState extends State<SearchPage> {
                 const SizedBox(
                   height: 15,
                 ),
-
-                /*// Search input for arrival with auto-completion
+/*
+                // Search input for arrival with auto-completion
                 TypeAheadField(
                   textFieldConfiguration: TextFieldConfiguration(
                     controller: end,
                     decoration: InputDecoration(
-                      hintText: translation(context).arrival,
+                      labelText: translation(context).arrival,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   suggestionsCallback: (pattern) async {
                     // Fetch auto-completion suggestions for arrival
-                    return await getAutoCompletionSuggestions(pattern);
+                    return await _getAutoCompletionSuggestions(pattern);
                   },
                   itemBuilder: (context, suggestion) {
                     return ListTile(
+                      leading: const Icon(Icons.location_on),
                       title: Text(suggestion.toString()),
                     );
                   },
                   onSuggestionSelected: (suggestion) {
                     end.text = suggestion.toString();
                   },
-                ),*/
+                ),
 
-                /*
-                Autocomplete(
+                Autocomplete<String>(
                   optionsBuilder: (TextEditingValue textEditingValue) {
                     if (textEditingValue.text == '') {
                       return const Iterable<String>.empty();
                     } else {
-                      return arrivalSuggestions.where((String option) {
+                      return endSuggestions.where((String option) {
                         return option
                             .toLowerCase()
                             .contains(textEditingValue.text.toLowerCase());
@@ -369,7 +394,7 @@ class _SearchPageState extends State<SearchPage> {
                     );
                   },
                 ),
-                */
+*/
                 myInput(
                   controler: end,
                   hint: translation(context).arrival,
@@ -409,8 +434,6 @@ class _SearchPageState extends State<SearchPage> {
                   height: 10,
                 ),
                 SizedBox(
-                  height: 600,
-                  width: 400,
                   child: Visibility(
                     visible: isVisible,
                     child: Column(
@@ -430,6 +453,14 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                             );
                           },
+                          backgroundColor: determineBestTravelMode() ==
+                                  translation(context).byCar
+                              ? Colors.grey.shade500
+                              : Colors.grey.shade200,
+                          textColor: determineBestTravelMode() ==
+                                  translation(context).byCar
+                              ? Colors.white
+                              : Colors.black,
                         ),
 
                         const SizedBox(
@@ -441,7 +472,7 @@ class _SearchPageState extends State<SearchPage> {
                           distance: distanceBike,
                           departure_time: getCurrentTime(),
                           arrival_time: calculateArrivalTime(durationBike),
-                          travelMean: "By bike",
+                          travelMean: translation(context).byBike,
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -451,6 +482,14 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                             );
                           },
+                          backgroundColor: determineBestTravelMode() ==
+                                  translation(context).byBike
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade200,
+                          textColor: determineBestTravelMode() ==
+                                  translation(context).byBike
+                              ? Colors.white
+                              : Colors.black,
                         ),
 
                         const SizedBox(
@@ -462,7 +501,7 @@ class _SearchPageState extends State<SearchPage> {
                           distance: distanceFoot,
                           departure_time: getCurrentTime(),
                           arrival_time: calculateArrivalTime(durationFoot),
-                          travelMean: "On foot",
+                          travelMean: translation(context).onFoot,
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -472,6 +511,22 @@ class _SearchPageState extends State<SearchPage> {
                               ),
                             );
                           },
+                          backgroundColor: determineBestTravelMode() ==
+                                  translation(context).onFoot
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade200,
+                          textColor: determineBestTravelMode() ==
+                                  translation(context).onFoot
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        const Text(
+                          'The optimal choice is highlited in dark grey!',
                         ),
                       ],
                     ),

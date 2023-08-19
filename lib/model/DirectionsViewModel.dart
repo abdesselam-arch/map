@@ -1,9 +1,11 @@
+// ignore_for_file: unrelated_type_equality_checks
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart'; // For GeoPoint representation
+//import 'package:latlong2/latlong.dart'; // For GeoPoint representation
 //import 'package:http/http.dart' as http;
 //import 'dart:convert';
+//import 'package:map/pages/search_page.dart';
 
-enum TravelMean { WALKING, BIKING} // Define other travel means if required }
+enum TravelMean { WALKING, BIKING, DRIVING} // Define other travel means if required }
 
 enum TravelPurpose { NONE }// Define other travel purposes if required }
 
@@ -33,18 +35,16 @@ class WeatherInformation {
 
 class DirectionsViewModel with ChangeNotifier {
   // Constants
-  static const int cMedical = 4;
-  static const int cWeather = 3;
-  static const int cDuration = 2;
-  static const int cPurpose = 1;
+  static const double cMedical = 0.538;
+  static const double cWeather = 0.2625;
+  static const double cDuration = 0.121;
+  static const double cPurpose = 0.077;
+  // 0.538 + 0.2625 + 0.121 + 0.077 = 1
+  // normalized weights calculated using fuzzy ahp to use with the wsm model
 
   // Attributes
   // A list of routes
   List<RouteInformation> routeInformations = [];
-
-  // Coordinates of start and destination of the route
-  late LatLng origin, destination;
-  late String originAddress, destinationAddress;
 
   // Travel purpose
   TravelPurpose purpose = TravelPurpose.NONE;
@@ -69,6 +69,40 @@ class DirectionsViewModel with ChangeNotifier {
   // Find each mean's weight according to weather and purpose criteria
   Future<double> getProbabilities() async {
     // Calculate possibilities by transport purpose
+    if(purpose == 'Medical Condition') {
+      if ( TravelMean == TravelMean.BIKING) {
+        // ignore: unused_local_variable
+        double wPurpose = 0.15;
+      } else if ( TravelMean == TravelMean.WALKING) {
+        // ignore: unused_local_variable
+        double wPurpose = 0.09;
+      } else if ( TravelMean == TravelMean.DRIVING) {
+        // ignore: unused_local_variable
+        double wPurpose = 0.5;
+      }
+    } else if (purpose == 'Travel') {
+      if ( TravelMean == TravelMean.BIKING) {
+        // ignore: unused_local_variable
+        double wPurpose = 0.15;
+      } else if ( TravelMean == TravelMean.WALKING) {
+        // ignore: unused_local_variable
+        double wPurpose = 0.5;
+      } else if ( TravelMean == TravelMean.DRIVING) {
+        // ignore: unused_local_variable
+        double wPurpose = 0.09;
+      }
+    } else if (purpose == 'Education' || purpose == 'Work') {
+      if ( TravelMean == TravelMean.BIKING) {
+        // ignore: unused_local_variable
+        double wPurpose = 0.26;
+      } else if ( TravelMean == TravelMean.WALKING) {
+        // ignore: unused_local_variable
+        double wPurpose = 0.5;
+      } else if ( TravelMean == TravelMean.DRIVING) {
+        // ignore: unused_local_variable
+        double wPurpose = 0.09;
+      }
+    }
     // purpose.getPossibleMeans(purposeRecomm); // Implement this method if needed
 
     // Calculate total duration
@@ -100,7 +134,7 @@ class DirectionsViewModel with ChangeNotifier {
     // ignore: unused_local_variable
     for (RouteInformation route in routeInformations) {
       
-      //TravelMean mode = route.getMode();
+      //TravelMean mode = const SearchPage().selectedPurpose;
       
       // Implement the logic to calculate wWeather, wPurpose, wRoute, and wMedical
       // double wWeather = ...;
@@ -121,22 +155,6 @@ class DirectionsViewModel with ChangeNotifier {
   bool isHealthy() {
     return unhealthyParams.length < 3;
   }
-
-  // Clear Attributes
-  void clear() {
-    
-    /*
-    origin = null;
-    destination = null;
-    originAddress = null;
-    destinationAddress = null;
-    destinationWeather = null;
-    purpose = TravelPurpose.NONE;
-    routeInformations.clear();
-    notifyListeners();
-    */
-  }
-
   // Accessors
   // Implement accessors for all the attributes as needed
 }
