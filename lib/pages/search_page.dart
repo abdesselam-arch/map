@@ -6,10 +6,11 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:map/classes/language_constants.dart';
-import 'package:map/components/input_field.dart';
 import 'dart:convert';
 import 'package:map/components/recommended_tem.dart';
 import 'package:map/pages/response_page.dart';
+import 'package:map/services/Health.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -69,14 +70,19 @@ class _SearchPageState extends State<SearchPage> {
     return bestTravelMode;
   }
 
-  List<String> purposeOptions = [
-    'Purpose',
-    'Travel',
-    'Education',
-    'Medical Condition',
-    'Work',
-    'Vacation'
-  ];
+  List<String> _purposeList() {
+    List<String> purposeOptions = [
+      'Purpose',
+      'Travel',
+      'Education',
+      'Medical Condition',
+      'Work',
+      'Vacation'
+    ];
+
+    return purposeOptions;
+  }
+
   String selectedPurpose = 'Purpose';
 
   void storeRequest() async {
@@ -278,7 +284,6 @@ class _SearchPageState extends State<SearchPage> {
                 const SizedBox(
                   height: 20,
                 ),
-/*
                 TypeAheadField(
                   textFieldConfiguration: TextFieldConfiguration(
                     controller: start,
@@ -306,7 +311,7 @@ class _SearchPageState extends State<SearchPage> {
                     elevation: 4.0,
                   ),
                 ),
-
+/*
                 Autocomplete<String>(
                   optionsBuilder: (TextEditingValue textEditingValue) {
                     if (textEditingValue.text == '') {
@@ -334,15 +339,15 @@ class _SearchPageState extends State<SearchPage> {
                     );
                   },
                 ),
-*/
+
                 myInput(
                   controler: start,
                   hint: translation(context).departure,
-                ),
+                ),*/
                 const SizedBox(
                   height: 15,
                 ),
-/*
+
                 // Search input for arrival with auto-completion
                 TypeAheadField(
                   textFieldConfiguration: TextFieldConfiguration(
@@ -366,7 +371,7 @@ class _SearchPageState extends State<SearchPage> {
                     end.text = suggestion.toString();
                   },
                 ),
-
+/*
                 Autocomplete<String>(
                   optionsBuilder: (TextEditingValue textEditingValue) {
                     if (textEditingValue.text == '') {
@@ -394,11 +399,11 @@ class _SearchPageState extends State<SearchPage> {
                     );
                   },
                 ),
-*/
+
                 myInput(
                   controler: end,
                   hint: translation(context).arrival,
-                ),
+                ),*/
                 const SizedBox(
                   height: 20,
                 ),
@@ -407,9 +412,10 @@ class _SearchPageState extends State<SearchPage> {
                   onChanged: (String? newValue) {
                     setState(() {
                       selectedPurpose = newValue!;
+                      print('selectedPurpose variable changed');
                     });
                   },
-                  items: purposeOptions.map((String value) {
+                  items: _purposeList().map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -428,6 +434,8 @@ class _SearchPageState extends State<SearchPage> {
                       await getRouteForTravelMode('car'); // Car
                       await getRouteForTravelMode('bike'); // Bike
                       await getRouteForTravelMode('foot'); // Foot
+
+                      const HealthIrregularityChecker();
                     },
                     child: Text(translation(context).submit)),
                 const SizedBox(
@@ -455,7 +463,7 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           backgroundColor: determineBestTravelMode() ==
                                   translation(context).byCar
-                              ? Colors.grey.shade500
+                              ? Colors.grey.shade600
                               : Colors.grey.shade200,
                           textColor: determineBestTravelMode() ==
                                   translation(context).byCar
@@ -484,7 +492,7 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           backgroundColor: determineBestTravelMode() ==
                                   translation(context).byBike
-                              ? Colors.grey.shade800
+                              ? Colors.grey.shade600
                               : Colors.grey.shade200,
                           textColor: determineBestTravelMode() ==
                                   translation(context).byBike
@@ -513,7 +521,7 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           backgroundColor: determineBestTravelMode() ==
                                   translation(context).onFoot
-                              ? Colors.grey.shade800
+                              ? Colors.grey.shade600
                               : Colors.grey.shade200,
                           textColor: determineBestTravelMode() ==
                                   translation(context).onFoot
@@ -527,6 +535,10 @@ class _SearchPageState extends State<SearchPage> {
 
                         const Text(
                           'The optimal choice is highlited in dark grey!',
+                        ),
+
+                        const SizedBox(
+                          height: 5,
                         ),
                       ],
                     ),
