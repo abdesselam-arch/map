@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:health/health.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
@@ -9,8 +12,8 @@ import 'package:map/classes/language_constants.dart';
 import 'dart:convert';
 import 'package:map/components/recommended_tem.dart';
 import 'package:map/pages/response_page.dart';
-import 'package:map/services/Health.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:map/services/health_data_screen.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -26,6 +29,210 @@ class _SearchPageState extends State<SearchPage> {
   double distanceKM = 0;
   double durationMin = 0;
   List<LatLng> routpoints = [const LatLng(52.05884, -1.345583)];
+
+  List<String> HealthProblems = [];
+  bool hasHealthProblems = false;
+  double dailySteps = 2600;
+  String advice = '';
+  var w = 0.0;
+
+  double carDurationWeight = 0.0;
+  double bikeDurationWeight = 0.0;
+  double footDurationWeight = 0.0;
+  List<double> DurationWeightList = [];
+
+  List<double> CalculateDurationWeight() {
+    carDurationWeight =
+        1 - (durationCar / (durationCar + durationFoot + durationBike));
+    DurationWeightList.add(carDurationWeight);
+    print('The car duration weight: ');
+    print(carDurationWeight);
+
+    bikeDurationWeight =
+        1 - (durationBike / (durationCar + durationFoot + durationBike));
+    DurationWeightList.add(bikeDurationWeight);
+    print('The bike duration weight: ');
+    print(footDurationWeight);
+
+    footDurationWeight =
+        1 - (durationFoot / (durationCar + durationFoot + durationBike));
+    DurationWeightList.add(footDurationWeight);
+    print('The walk duration weight: ');
+    print(bikeDurationWeight);
+
+    return DurationWeightList;
+  }
+
+  double? heartRate;
+  double? bp;
+  double? steps;
+  double? bodyTemp;
+  double? bloodGlucose;
+  double? respRate;
+  double? bloodOxy;
+
+  double? bloodPreSys;
+  double? bloodPreDia;
+
+  List<HealthDataPoint> healthData = [];
+
+  HealthFactory health = HealthFactory();
+
+  /// Fetch data points from the health plugin and show them in the app.
+  Future _fetchData() async {
+    // define the types to get
+    final types = [
+      HealthDataType.HEART_RATE,
+      HealthDataType.BLOOD_PRESSURE_SYSTOLIC,
+      HealthDataType.BLOOD_PRESSURE_DIASTOLIC,
+      HealthDataType.STEPS,
+      HealthDataType.BODY_TEMPERATURE,
+      HealthDataType.BLOOD_OXYGEN,
+      HealthDataType.RESPIRATORY_RATE,
+      HealthDataType.BLOOD_GLUCOSE,
+    ];
+
+    // get data within the last 24 hours
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+
+    // requesting access to the data types before reading them
+    bool requested = await health.requestAuthorization(types);
+
+    if (requested) {
+      try {
+        // fetch health data
+        healthData = await health.getHealthDataFromTypes(yesterday, now, types);
+
+        if (healthData.isNotEmpty) {
+          for (HealthDataPoint h in healthData) {
+            if (h.type == HealthDataType.HEART_RATE) {
+              heartRate = h.value as double?;
+            } else if (h.type == HealthDataType.BLOOD_PRESSURE_SYSTOLIC) {
+              bloodPreSys = h.value as double?;
+            } else if (h.type == HealthDataType.BLOOD_PRESSURE_DIASTOLIC) {
+              bloodPreDia = h.value as double?;
+            } else if (h.type == HealthDataType.STEPS) {
+              steps = h.value as double?;
+            } else if (h.type == HealthDataType.BODY_TEMPERATURE) {
+              bodyTemp = h.value as double?;
+            } else if (h.type == HealthDataType.BLOOD_GLUCOSE) {
+              bloodGlucose = h.value as double?;
+            } else if (h.type == HealthDataType.RESPIRATORY_RATE) {
+              respRate = h.value as double?;
+            } else if (h.type == HealthDataType.BLOOD_OXYGEN) {
+              bloodOxy = h.value as double?;
+            }
+          }
+          if (bloodPreSys != null && bloodPreDia != null) {
+            bp = "$bloodPreSys / $bloodPreDia mmHg" as double?;
+          }
+
+          setState(() {});
+        }
+      } catch (error) {
+        print("Exception in getHealthDataFromTypes: $error");
+      }
+
+      // filter out duplicates
+      healthData = HealthFactory.removeDuplicates(healthData);
+    } else {
+      print("Authorization not granted");
+    }
+  }
+
+  Future _checkForHealthProblems() async {
+    if (heartRate != null) {
+      if (heartRate! > 60.0) {
+        HealthProblems.add("Heart Rate: $heartRate");
+        setState(() {});
+      }
+    }
+    if (bodyTemp != null) {
+      if (bodyTemp! > 37.0) {
+        HealthProblems.add('Body Tempureture: $bodyTemp °C');
+      }
+    }
+    if (respRate != null) {
+      if (respRate! > 12.0 && respRate! < 25.0) {
+        HealthProblems.add('Respiratory Rate: $respRate');
+      }
+    }
+    if (bloodPreDia != null && bloodPreSys != null) {
+      if ((bloodPreDia! > 60.0 && bloodPreDia! < 80.0) ||
+          (bloodPreSys! > 90.0 && bloodPreSys! < 120.0)) {
+        HealthProblems.add('Blood Pressure: $bloodPreSys / $bloodPreDia mmHg');
+      }
+    }
+    if (HealthProblems.length > 3) {
+      hasHealthProblems = true;
+    }
+
+    setState(() {});
+  }
+
+  // ignore: non_constant_identifier_names
+  Future<double> _CalculateHealthWeight() async {
+    if (!hasHealthProblems) {
+      w = 0.6 * steps! / dailySteps;
+      print(w);
+    }
+    return w;
+  }
+
+  /// Generate random health data for testing.
+  Future _generateTestData() async {
+    final random = Random();
+
+    heartRate = (90); // Generates a heart rate between 60 and 100 bpm.
+    bloodPreSys =
+        (110); // Generates a systolic blood pressure between 90 and 130 mmHg.
+    bloodPreDia =
+        (80); // Generates a diastolic blood pressure between 60 and 90 mmHg.
+    steps = (2000 + random.nextInt(8000))
+        as double?; // Generates a random number of steps between 2000 and 10000.
+    bodyTemp =
+        (40.0); // Generates a random body temperature between 35.5 and 37.5 degrees Celsius.
+    bloodGlucose = (70 + random.nextInt(50))
+        as double?; // Generates a random blood glucose level between 70 and 120 mg/dL.
+    respRate =
+        (18); // Generates a random respiratory rate between 10 and 30 breaths per minute.
+    bloodOxy = (95 + random.nextInt(5))
+        as double?; // Generates a random blood oxygen level between 95% and 100%.
+
+    bp = "$bloodPreSys / $bloodPreDia mmHg"
+        as double?; // Combines systolic and diastolic blood pressure.
+
+    setState(() {});
+  }
+
+  String checkForAdvice() {
+    if (heartRate! > 60) {
+      advice =
+          "Your heart rate is high. Consider taking a break and relaxing.\n";
+    }
+/*
+    if (bloodPreSys! > 90 || bloodPreDia! > 60) {
+      advice =
+          "Your blood pressure is high. Avoid strenuous activities and consider consulting a doctor.";
+    }
+    if (bloodGlucose! > 120) {
+      advice =
+          "Your blood glucose level is high. Monitor your diet and consider avoiding sugary foods.";
+    }
+    if (bloodOxy! < 95) {
+      advice =
+          "Your blood oxygen level is low. Consider resting and staying indoors.";
+    }
+*/
+
+    if (advice.isEmpty) {
+      advice =
+          "Your health condition seems to be normal. Keep up the good work!";
+    }
+
+    return advice;
+  }
 
   // user instance
   final currentUser = FirebaseAuth.instance.currentUser!;
@@ -247,6 +454,10 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
     start.addListener(onStartTextChanged);
     end.addListener(onEndTextChanged);
+    _fetchData();
+    _generateTestData();
+    //_checkForHealthProblems();
+    //_CalculateHealthWeight();
   }
 
   void onStartTextChanged() {
@@ -435,7 +646,19 @@ class _SearchPageState extends State<SearchPage> {
                       await getRouteForTravelMode('bike'); // Bike
                       await getRouteForTravelMode('foot'); // Foot
 
-                      const HealthIrregularityChecker();
+                      //const HealthIrregularityChecker();
+                      //_fetchData();
+                      //_generateTestData();
+                      _checkForHealthProblems();
+                      _CalculateHealthWeight();
+                      // ignore: use_build_context_synchronously
+                      showDialog(
+                        context: context,
+                        builder: (context) => healthCard(
+                          HealthProblems: HealthProblems,
+                        ),
+                      );
+                      CalculateDurationWeight();
                     },
                     child: Text(translation(context).submit)),
                 const SizedBox(
@@ -533,8 +756,12 @@ class _SearchPageState extends State<SearchPage> {
                           height: 15,
                         ),
 
-                        const Text(
-                          'The optimal choice is highlited in dark grey!',
+                        Text(
+                          checkForAdvice(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
 
                         const SizedBox(
