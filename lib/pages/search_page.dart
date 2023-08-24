@@ -1,9 +1,8 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:health/health.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
@@ -33,12 +32,83 @@ class _SearchPageState extends State<SearchPage> {
   List<String> HealthProblems = [];
   bool hasHealthProblems = false;
   double dailySteps = 2600;
-  String advice = '';
-  var w = 0.0;
+  List<String> adviceList = [];
 
+  // Health Criteria weight
+  double healthCriteriaWeight = 0.0;
+  // Duration Criteria weight for each alternative choice
   double carDurationWeight = 0.0;
   double bikeDurationWeight = 0.0;
   double footDurationWeight = 0.0;
+  // Purpose Criteria weight
+  double carPurposeWeight = 0.0;
+  double bikePurposeWeight = 0.0;
+  double footPurposeWeight = 0.0;
+
+  void getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark placemark = placemarks.first;
+
+        String street = placemark.street ?? '';
+        String locality = placemark.locality ?? '';
+        String subAdminArea = placemark.subAdministrativeArea ?? '';
+        String adminArea = placemark.administrativeArea ?? '';
+
+        String address = '$street, $locality, $subAdminArea, $adminArea';
+
+        setState(() {
+          start.text = address;
+        });
+      } else {
+        print('No placemark available');
+      }
+    } catch (e) {
+      print('Error getting user location: $e');
+    }
+  }
+
+  void getCurrentLocationArrival() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark placemark = placemarks.first;
+
+        String street = placemark.street ?? '';
+        String locality = placemark.locality ?? '';
+        String subAdminArea = placemark.subAdministrativeArea ?? '';
+        String adminArea = placemark.administrativeArea ?? '';
+
+        String address = '$street, $locality, $subAdminArea, $adminArea';
+
+        setState(() {
+          end.text = address;
+        });
+      } else {
+        print('No placemark available');
+      }
+    } catch (e) {
+      print('Error getting user location: $e');
+    }
+  }
+
   List<double> DurationWeightList = [];
 
   List<double> CalculateDurationWeight() {
@@ -61,6 +131,42 @@ class _SearchPageState extends State<SearchPage> {
     print(bikeDurationWeight);
 
     return DurationWeightList;
+  }
+
+  // Function to calculate the purpose criteria weight
+  double calculatePurposeWeight() {
+    if (selectedPurpose == 'Medical condition') {
+      carPurposeWeight = 0.5;
+      footPurposeWeight = 0.2;
+      bikePurposeWeight = 0.3;
+      print('the purpose criteria weight using a car');
+      print(carPurposeWeight);
+      print('the purpose criteria weight on foot');
+      print(footPurposeWeight);
+      print('the purpose criteria weight using a bike');
+      print(bikePurposeWeight);
+    } else if (selectedPurpose == 'Vacation' || selectedPurpose == 'Travel') {
+      carPurposeWeight = 0.3;
+      bikePurposeWeight = 0.3;
+      footPurposeWeight = 0.4;
+      print('the purpose criteria weight using a car');
+      print(carPurposeWeight);
+      print('the purpose criteria weight on foot');
+      print(footPurposeWeight);
+      print('the purpose criteria weight using a bike');
+      print(bikePurposeWeight);
+    } else if (selectedPurpose == 'Work' || selectedPurpose == 'Education') {
+      carPurposeWeight = 0.5;
+      footPurposeWeight = 0.25;
+      bikePurposeWeight = 0.25;
+      print('the purpose criteria weight using a car');
+      print(carPurposeWeight);
+      print('the purpose criteria weight on foot');
+      print(footPurposeWeight);
+      print('the purpose criteria weight using a bike');
+      print(bikePurposeWeight);
+    }
+    return carPurposeWeight;
   }
 
   double? heartRate;
@@ -144,7 +250,7 @@ class _SearchPageState extends State<SearchPage> {
   Future _checkForHealthProblems() async {
     if (heartRate != null) {
       if (heartRate! > 60.0) {
-        HealthProblems.add("Heart Rate: $heartRate");
+        HealthProblems.add("Heart Rate: $heartRate bpm");
         setState(() {});
       }
     }
@@ -155,7 +261,7 @@ class _SearchPageState extends State<SearchPage> {
     }
     if (respRate != null) {
       if (respRate! > 12.0 && respRate! < 25.0) {
-        HealthProblems.add('Respiratory Rate: $respRate');
+        HealthProblems.add('Respiratory Rate: $respRate bpm');
       }
     }
     if (bloodPreDia != null && bloodPreSys != null) {
@@ -174,31 +280,30 @@ class _SearchPageState extends State<SearchPage> {
   // ignore: non_constant_identifier_names
   Future<double> _CalculateHealthWeight() async {
     if (!hasHealthProblems) {
-      w = 0.6 * steps! / dailySteps;
-      print(w);
+      healthCriteriaWeight = 0.6 * steps! / dailySteps;
+      print('Health criteria weight: ');
+      print(healthCriteriaWeight);
     }
-    return w;
+    return healthCriteriaWeight;
   }
 
   /// Generate random health data for testing.
   Future _generateTestData() async {
-    final random = Random();
-
     heartRate = (90); // Generates a heart rate between 60 and 100 bpm.
     bloodPreSys =
         (110); // Generates a systolic blood pressure between 90 and 130 mmHg.
     bloodPreDia =
         (80); // Generates a diastolic blood pressure between 60 and 90 mmHg.
-    steps = (2000 + random.nextInt(8000))
-        as double?; // Generates a random number of steps between 2000 and 10000.
+    steps =
+        (8000); // Generates a random number of steps between 2000 and 10000.
     bodyTemp =
         (40.0); // Generates a random body temperature between 35.5 and 37.5 degrees Celsius.
-    bloodGlucose = (70 + random.nextInt(50))
-        as double?; // Generates a random blood glucose level between 70 and 120 mg/dL.
+    bloodGlucose =
+        (130); // Generates a random blood glucose level between 70 and 120 mg/dL.
     respRate =
         (18); // Generates a random respiratory rate between 10 and 30 breaths per minute.
-    bloodOxy = (95 + random.nextInt(5))
-        as double?; // Generates a random blood oxygen level between 95% and 100%.
+    bloodOxy =
+        (98); // Generates a random blood oxygen level between 95% and 100%.
 
     bp = "$bloodPreSys / $bloodPreDia mmHg"
         as double?; // Combines systolic and diastolic blood pressure.
@@ -206,32 +311,30 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {});
   }
 
-  String checkForAdvice() {
+  List<String> checkForAdvice() {
     if (heartRate! > 60) {
-      advice =
-          "Your heart rate is high. Consider taking a break and relaxing.\n";
+      adviceList.add(
+          "Your heart rate is high. Consider taking a break and relaxing.");
     }
-/*
     if (bloodPreSys! > 90 || bloodPreDia! > 60) {
-      advice =
-          "Your blood pressure is high. Avoid strenuous activities and consider consulting a doctor.";
+      adviceList.add(
+          "Your blood pressure is high. Avoid strenuous activities and consider consulting a doctor.");
     }
     if (bloodGlucose! > 120) {
-      advice =
-          "Your blood glucose level is high. Monitor your diet and consider avoiding sugary foods.";
+      adviceList.add(
+          "Your blood glucose level is high. Monitor your diet and consider avoiding sugary foods.");
     }
     if (bloodOxy! < 95) {
-      advice =
-          "Your blood oxygen level is low. Consider resting and staying indoors.";
-    }
-*/
-
-    if (advice.isEmpty) {
-      advice =
-          "Your health condition seems to be normal. Keep up the good work!";
+      adviceList.add(
+          "Your blood oxygen level is low. Consider resting and staying indoors.");
     }
 
-    return advice;
+    if (adviceList.isEmpty) {
+      adviceList.add(
+          "Your health condition seems to be normal. Keep up the good work!");
+    }
+
+    return adviceList;
   }
 
   // user instance
@@ -277,15 +380,19 @@ class _SearchPageState extends State<SearchPage> {
     return bestTravelMode;
   }
 
+  String initialPurpose = '';
+
   List<String> _purposeList() {
     List<String> purposeOptions = [
       'Purpose',
       'Travel',
       'Education',
-      'Medical Condition',
+      'Medical condition',
       'Work',
       'Vacation'
     ];
+
+    initialPurpose = translation(context).purposeField;
 
     return purposeOptions;
   }
@@ -501,6 +608,10 @@ class _SearchPageState extends State<SearchPage> {
                     decoration: InputDecoration(
                       labelText: translation(context).departure,
                       border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.my_location),
+                        onPressed: getCurrentLocation,
+                      ),
                     ),
                   ),
                   suggestionsCallback: (pattern) async {
@@ -566,6 +677,10 @@ class _SearchPageState extends State<SearchPage> {
                     decoration: InputDecoration(
                       labelText: translation(context).arrival,
                       border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.my_location),
+                        onPressed: getCurrentLocationArrival,
+                      ),
                     ),
                   ),
                   suggestionsCallback: (pattern) async {
@@ -658,7 +773,9 @@ class _SearchPageState extends State<SearchPage> {
                           HealthProblems: HealthProblems,
                         ),
                       );
+                      checkForAdvice();
                       CalculateDurationWeight();
+                      calculatePurposeWeight();
                     },
                     child: Text(translation(context).submit)),
                 const SizedBox(
@@ -757,7 +874,7 @@ class _SearchPageState extends State<SearchPage> {
                         ),
 
                         Text(
-                          checkForAdvice(),
+                          adviceList.join("\n\n"),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
