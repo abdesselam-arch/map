@@ -147,7 +147,7 @@ class _SearchPageState extends State<SearchPage> {
     if (dangerousCar) {
       weatherWeightCar = 0.0;
       weatherWeightFoot = 0.5;
-      weatherWeightFoot = 0.5;
+      weatherWeightBike = 0.5;
     }
     if (dangerousFoot) {
       weatherWeightFoot = 0.0;
@@ -158,6 +158,13 @@ class _SearchPageState extends State<SearchPage> {
       weatherWeightCar = 0.5;
       weatherWeightBike = 0.0;
       weatherWeightFoot = 0.5;
+    }
+
+    if (!dangerousCar && !dangerousFoot && !dangerousBike) {
+      // No dangerous weather conditions
+      weatherWeightCar = 0.333;
+      weatherWeightBike = 0.333;
+      weatherWeightFoot = 0.333;
     }
   }
 
@@ -228,23 +235,19 @@ class _SearchPageState extends State<SearchPage> {
   List<double> DurationWeightList = [];
 
   List<double> CalculateDurationWeight() {
-    carDurationWeight =
-        1 - (durationCar / (durationCar + durationFoot + durationBike));
+    double totalDuration = durationCar + durationFoot + durationBike;
+
+    carDurationWeight = 1 - (durationCar / totalDuration);
     DurationWeightList.add(carDurationWeight);
-    print('The car duration weight: ');
-    print(carDurationWeight);
+    print('The car duration weight: $carDurationWeight');
 
-    bikeDurationWeight =
-        1 - (durationBike / (durationCar + durationFoot + durationBike));
+    bikeDurationWeight = 1 - (durationBike / totalDuration);
     DurationWeightList.add(bikeDurationWeight);
-    print('The bike duration weight: ');
-    print(footDurationWeight);
+    print('The bike duration weight: $bikeDurationWeight');
 
-    footDurationWeight =
-        1 - (durationFoot / (durationCar + durationFoot + durationBike));
+    footDurationWeight = 1 - (durationFoot / totalDuration);
     DurationWeightList.add(footDurationWeight);
-    print('The walk duration weight: ');
-    print(bikeDurationWeight);
+    print('The walk duration weight: $footDurationWeight');
 
     return DurationWeightList;
   }
@@ -255,33 +258,19 @@ class _SearchPageState extends State<SearchPage> {
       carPurposeWeight = 0.5;
       footPurposeWeight = 0.2;
       bikePurposeWeight = 0.3;
-      print('the purpose criteria weight using a car');
-      print(carPurposeWeight);
-      print('the purpose criteria weight on foot');
-      print(footPurposeWeight);
-      print('the purpose criteria weight using a bike');
-      print(bikePurposeWeight);
     } else if (selectedPurpose == 'Vacation' || selectedPurpose == 'Travel') {
-      carPurposeWeight = 0.3;
-      bikePurposeWeight = 0.3;
-      footPurposeWeight = 0.4;
-      print('the purpose criteria weight using a car');
-      print(carPurposeWeight);
-      print('the purpose criteria weight on foot');
-      print(footPurposeWeight);
-      print('the purpose criteria weight using a bike');
-      print(bikePurposeWeight);
+      carPurposeWeight = 0.4; // Moderate weight for car
+      bikePurposeWeight = 0.2; // Moderate weight for biking
+      footPurposeWeight = 0.4; // Higher weight for walking, ideal for exploring
     } else if (selectedPurpose == 'Work' || selectedPurpose == 'Education') {
-      carPurposeWeight = 0.5;
-      footPurposeWeight = 0.25;
-      bikePurposeWeight = 0.25;
-      print('the purpose criteria weight using a car');
-      print(carPurposeWeight);
-      print('the purpose criteria weight on foot');
-      print(footPurposeWeight);
-      print('the purpose criteria weight using a bike');
-      print(bikePurposeWeight);
+      carPurposeWeight = 0.5; // Moderate weight for car
+      footPurposeWeight = 0.25; // Moderate weight for walking
+      bikePurposeWeight = 0.25; // Moderate weight for biking
     }
+    print('the purpose criteria weight using a car: $carPurposeWeight');
+    print('the purpose criteria weight on foot: $footPurposeWeight');
+    print('the purpose criteria weight using a bike: $bikePurposeWeight');
+
     return carPurposeWeight;
   }
 
@@ -386,8 +375,23 @@ class _SearchPageState extends State<SearchPage> {
         HealthProblems.add('Blood Pressure: $bloodPreSys / $bloodPreDia mmHg');
       }
     }
+    if (bloodOxy != null) {
+      if (bloodOxy! < 92) {
+        HealthProblems.add('Blood Oxygen saturation low: $bloodOxy %');
+      }
+    }
+    if (bloodGlucose != null) {
+      if (bloodGlucose! > 180) {
+        HealthProblems.add('Blood sugar level: $bloodGlucose mg/dL');
+      }
+    }
     if (HealthProblems.length > 3) {
-      hasHealthProblems = true;
+      setState(() {
+        hasHealthProblems = true;
+      });
+    }
+    if (HealthProblems.isEmpty) {
+      HealthProblems.add('There are no obvious Health Problems!');
     }
 
     setState(() {});
@@ -396,26 +400,31 @@ class _SearchPageState extends State<SearchPage> {
   // ignore: non_constant_identifier_names
   Future<double> _CalculateHealthWeight() async {
     if (!hasHealthProblems) {
-      healthCriteriaWeight = 0.6 * steps! / dailySteps;
-      print('Health criteria weight: ');
-      print(healthCriteriaWeight);
+      final double stepsRatio = steps! / dailySteps;
+
+      // Ensure that the health weight doesn't exceed the maximum value
+      healthCriteriaWeight = 1 / stepsRatio;
+
+      print('Health criteria weight: $healthCriteriaWeight');
+    } else {
+      healthCriteriaWeight = 0.3;
     }
     return healthCriteriaWeight;
   }
 
   /// Generate random health data for testing.
   Future _generateTestData() async {
-    heartRate = (90); // Generates a heart rate between 60 and 100 bpm.
+    heartRate = (60); // Generates a heart rate between 60 and 100 bpm.
     bloodPreSys =
-        (100); // Generates a systolic blood pressure between 90 and 130 mmHg.
+        (90); // Generates a systolic blood pressure between 90 and 130 mmHg.
     bloodPreDia =
-        (70); // Generates a diastolic blood pressure between 60 and 90 mmHg.
+        (60); // Generates a diastolic blood pressure between 60 and 90 mmHg.
     steps =
         (8000); // Generates a random number of steps between 2000 and 10000.
     bodyTemp =
-        (40.0); // Generates a random body temperature between 35.5 and 37.5 degrees Celsius.
+        (36.5); // Generates a random body temperature between 35.5 and 37.5 degrees Celsius.
     bloodGlucose =
-        (100); // Generates a random blood glucose level between 70 and 120 mg/dL.
+        (70); // Generates a random blood glucose level between 70 and 120 mg/dL.
     respRate =
         (10); // Generates a random respiratory rate between 10 and 30 breaths per minute.
     bloodOxy =
@@ -429,14 +438,13 @@ class _SearchPageState extends State<SearchPage> {
 
   List<String> checkForAdvice() {
     if (heartRate! > 60) {
-      adviceList.add(
-          "Your heart rate is high. Consider taking a break and relaxing.");
+      adviceList.add("Your heart rate is high. Consider taking a break.");
     }
     if (bloodPreSys! > 90 || bloodPreDia! > 60) {
       adviceList.add(
-          "Your blood pressure is high. Avoid strenuous activities and consider consulting a doctor.");
+          "Your blood pressure is high. Avoid strenuous activities and travel.");
     }
-    if (bloodGlucose! > 120) {
+    if (bloodGlucose! > 180) {
       adviceList.add(
           "Your blood glucose level is high. Monitor your diet and consider avoiding sugary foods.");
     }
@@ -670,7 +678,7 @@ class _SearchPageState extends State<SearchPage> {
   // The getAutoCompletionSuggestions function remains the same as provided in the question.
   // It fetches auto-completion suggestions using Nominatim.
   Future<List<String>> _getAutoCompletionSuggestions(String input) async {
-    final baseUrl = 'https://nominatim.openstreetmap.org/search';
+    const baseUrl = 'https://nominatim.openstreetmap.org/search';
     final query =
         '?q=${input.replaceAll(' ', '%20')}&format=json&addressdetails=1';
 
