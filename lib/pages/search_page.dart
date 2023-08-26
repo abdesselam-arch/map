@@ -34,6 +34,12 @@ class _SearchPageState extends State<SearchPage> {
   double dailySteps = 2600;
   List<String> adviceList = [];
 
+  // Fuzzy AHP Assigned weights for each Criteria
+  final double healthCondition = 0.538;
+  final double weatherCondition = 0.2625;
+  final double purposeCondition = 0.121;
+  final double durationCondition = 0.077;
+
   // Health Criteria weight
   double healthCriteriaWeight = 0.0;
   // Duration Criteria weight for each alternative choice
@@ -44,6 +50,116 @@ class _SearchPageState extends State<SearchPage> {
   double carPurposeWeight = 0.0;
   double bikePurposeWeight = 0.0;
   double footPurposeWeight = 0.0;
+  // Weather Criteria weight
+  double weatherWeightCar = 0.35;
+  double weatherWeightFoot = 0.35;
+  double weatherWeightBike = 0.3;
+
+  List<String> carDangerousWeather = [
+    'thunderstorm with light rain',
+    'thunderstorm with rain',
+    'thunderstorm with heavy rain',
+    'light thunderstorm',
+    'thunderstorm',
+    'heavy thunderstorm',
+    'ragged thunderstorm',
+    'thunderstorm with light drizzle',
+    'thunderstorm with drizzle',
+    'thunderstorm with heavy drizzle',
+    'freezing rain',
+    'heavy intensity shower rain',
+    'ragged shower rain',
+    'tornado',
+  ];
+
+  List<String> footDangerousWeather = [
+    'heavy intensity drizzle rain',
+    'shower rain and drizzle',
+    'heavy intensity rain',
+    'very heavy rain',
+    'extreme rain',
+    'freezing rain',
+    'heavy intensity shower rain',
+    'ragged shower rain',
+    'tornado',
+  ];
+
+  List<String> bikeDangerousWeather = [
+    'light intensity drizzle',
+    'drizzle',
+    'heavy intensity drizzle',
+    'light intensity drizzle rain',
+    'drizzle rain',
+    'heavy intensity drizzle rain',
+    'shower rain and drizzle',
+    'heavy shower rain and drizzle',
+    'shower drizzle',
+    'light rain',
+    'moderate rain',
+    'heavy intensity rain',
+    'very heavy rain',
+    'extreme rain',
+    'freezing rain',
+    'heavy intensity shower rain',
+    'ragged shower rain',
+    'tornado',
+  ];
+
+  String weatherDescription = '';
+  double temperature = 0;
+
+  void fetchWeatherData(TextEditingController controller) async {
+    const apiKey = '9288b0a87c194f099c4a28c2322ca8c0';
+    final url =
+        'https://api.openweathermap.org/data/2.5/weather?location=$controller&units=metric&appid=$apiKey';
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      setState(() {
+        weatherDescription = data['weather'][0]['description'];
+        temperature = data['main']['temp'];
+        calculateWeatherWeights();
+      });
+    }
+  }
+
+  bool isDangerousForCar(String weatherDescription) {
+    return carDangerousWeather.contains(weatherDescription.toLowerCase());
+  }
+
+  bool isDangerousForFoot(String weatherDescription, double tempurature) {
+    return footDangerousWeather.contains(weatherDescription.toLowerCase()) &&
+        (temperature < 15 || temperature > 30);
+  }
+
+  bool isDangerousForBike(String weatherDescription) {
+    return bikeDangerousWeather.contains(weatherDescription.toLowerCase());
+  }
+
+  void calculateWeatherWeights() {
+    bool dangerousCar = isDangerousForCar(weatherDescription);
+    bool dangerousBike = isDangerousForBike(weatherDescription);
+    bool dangerousFoot = isDangerousForFoot(weatherDescription, temperature);
+
+    if (dangerousCar) {
+      weatherWeightCar = 0.0;
+      weatherWeightFoot = 0.5;
+      weatherWeightFoot = 0.5;
+    }
+    if (dangerousFoot) {
+      weatherWeightFoot = 0.0;
+      weatherWeightBike = 0.5;
+      weatherWeightCar = 0.5;
+    }
+    if (dangerousBike) {
+      weatherWeightCar = 0.5;
+      weatherWeightBike = 0.0;
+      weatherWeightFoot = 0.5;
+    }
+  }
 
   void getCurrentLocation() async {
     try {
@@ -291,17 +407,17 @@ class _SearchPageState extends State<SearchPage> {
   Future _generateTestData() async {
     heartRate = (90); // Generates a heart rate between 60 and 100 bpm.
     bloodPreSys =
-        (110); // Generates a systolic blood pressure between 90 and 130 mmHg.
+        (100); // Generates a systolic blood pressure between 90 and 130 mmHg.
     bloodPreDia =
-        (80); // Generates a diastolic blood pressure between 60 and 90 mmHg.
+        (70); // Generates a diastolic blood pressure between 60 and 90 mmHg.
     steps =
         (8000); // Generates a random number of steps between 2000 and 10000.
     bodyTemp =
         (40.0); // Generates a random body temperature between 35.5 and 37.5 degrees Celsius.
     bloodGlucose =
-        (130); // Generates a random blood glucose level between 70 and 120 mg/dL.
+        (100); // Generates a random blood glucose level between 70 and 120 mg/dL.
     respRate =
-        (18); // Generates a random respiratory rate between 10 and 30 breaths per minute.
+        (10); // Generates a random respiratory rate between 10 and 30 breaths per minute.
     bloodOxy =
         (98); // Generates a random blood oxygen level between 95% and 100%.
 
@@ -359,21 +475,34 @@ class _SearchPageState extends State<SearchPage> {
   // function to determine the best travelMode (might be deleted later or modified)
 
   String determineBestTravelMode() {
-    double minDistance = double.infinity;
     String bestTravelMode = '';
 
-    if (distanceFoot < minDistance) {
-      minDistance = distanceFoot;
-      bestTravelMode = translation(context).onFoot;
-    }
+    double carAlternativeWeight = 0.0;
+    double footAlternativeWeight = 0.0;
+    double bikeAlternativeWeight = 0.0;
 
-    if (distanceCar < minDistance) {
-      minDistance = distanceCar;
+    carAlternativeWeight = (carDurationWeight * durationCondition) +
+        (carPurposeWeight * purposeCondition) +
+        (healthCriteriaWeight * healthCondition) +
+        (weatherWeightCar * weatherCondition);
+
+    bikeAlternativeWeight = (bikeDurationWeight * durationCondition) +
+        (bikePurposeWeight * purposeCondition) +
+        (healthCriteriaWeight * healthCondition) +
+        (weatherWeightBike * weatherCondition);
+
+    footAlternativeWeight = (footDurationWeight * durationCondition) +
+        (footPurposeWeight * purposeCondition) +
+        (healthCriteriaWeight * healthCondition) +
+        (weatherWeightFoot * weatherCondition);
+
+    if (carAlternativeWeight >= bikeAlternativeWeight &&
+        carAlternativeWeight >= footAlternativeWeight) {
       bestTravelMode = translation(context).byCar;
-    }
-
-    if (distanceBike < minDistance) {
-      minDistance = distanceBike;
+    } else if (footAlternativeWeight >= carAlternativeWeight &&
+        footAlternativeWeight >= bikeAlternativeWeight) {
+      bestTravelMode = translation(context).onFoot;
+    } else {
       bestTravelMode = translation(context).byBike;
     }
 
@@ -563,6 +692,7 @@ class _SearchPageState extends State<SearchPage> {
     end.addListener(onEndTextChanged);
     _fetchData();
     _generateTestData();
+    fetchWeatherData(end);
     //_checkForHealthProblems();
     //_CalculateHealthWeight();
   }
@@ -766,6 +896,7 @@ class _SearchPageState extends State<SearchPage> {
                       //_generateTestData();
                       _checkForHealthProblems();
                       _CalculateHealthWeight();
+
                       // ignore: use_build_context_synchronously
                       showDialog(
                         context: context,
@@ -773,6 +904,7 @@ class _SearchPageState extends State<SearchPage> {
                           HealthProblems: HealthProblems,
                         ),
                       );
+
                       checkForAdvice();
                       CalculateDurationWeight();
                       calculatePurposeWeight();
@@ -791,7 +923,7 @@ class _SearchPageState extends State<SearchPage> {
                           distance: distanceCar,
                           departure_time: getCurrentTime(),
                           arrival_time: calculateArrivalTime(durationCar),
-                          travelMean: translation(context).byCar,
+                          travelMean: '${translation(context).byCar} 🚗',
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -820,7 +952,7 @@ class _SearchPageState extends State<SearchPage> {
                           distance: distanceBike,
                           departure_time: getCurrentTime(),
                           arrival_time: calculateArrivalTime(durationBike),
-                          travelMean: translation(context).byBike,
+                          travelMean: '${translation(context).byBike} 🚲',
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -849,7 +981,7 @@ class _SearchPageState extends State<SearchPage> {
                           distance: distanceFoot,
                           departure_time: getCurrentTime(),
                           arrival_time: calculateArrivalTime(durationFoot),
-                          travelMean: translation(context).onFoot,
+                          travelMean: '${translation(context).onFoot} 🚶',
                           onPressed: () {
                             Navigator.push(
                               context,
