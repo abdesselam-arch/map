@@ -71,9 +71,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
 
           MaterialButton(
             onPressed: passwordReset,
-            color: Colors.black,
+            color: Colors.green.shade700,
             minWidth: 20,
             height: 70,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
             child: Text(
               translation(context).resetPassword,
               style: const TextStyle(

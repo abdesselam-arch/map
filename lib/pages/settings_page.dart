@@ -6,7 +6,6 @@ import 'package:map/classes/language_constants.dart';
 import 'package:map/components/text_box.dart';
 import 'package:map/main.dart';
 
-
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -77,6 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection("Users")
@@ -89,12 +89,13 @@ class _SettingsPageState extends State<SettingsPage> {
             return ListView(
               children: [
                 const SizedBox(
-                  height: 50,
+                  height: 20,
                 ),
                 // profile icon
-                const Icon(
-                  Icons.person,
-                  size: 90,
+                Image.asset(
+                  'images/Aspire+ZayedUni.jpg',
+                  width: 200,
+                  height: 200,
                 ),
 
                 // user email
@@ -168,7 +169,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       onChanged: (Language? language) async {
                         //do something
                         if (language != null) {
-                          Locale _locale = await setLocale(language.languageCode);
+                          Locale _locale =
+                              await setLocale(language.languageCode);
                           MyApp.setLocale(context, _locale);
                         }
                       },
@@ -184,7 +186,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   onPressed: () {
                     FirebaseAuth.instance.signOut();
                   },
-                  backgroundColor: Colors.black,
+                  backgroundColor: Colors.green.shade500,
                   child: const Icon(Icons.logout_outlined),
                 ),
               ],

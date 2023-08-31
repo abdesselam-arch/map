@@ -7,12 +7,22 @@ import 'package:health/health.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:map/classes/language.dart';
 import 'package:map/classes/language_constants.dart';
+import 'package:map/components/public_transport_card.dart';
 import 'dart:convert';
 import 'package:map/components/recommended_tem.dart';
+import 'package:map/main.dart';
 import 'package:map/pages/response_page.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:map/services/health_data_screen.dart';
+
+class TransitOption {
+  final String name;
+  final String type;
+
+  TransitOption({required this.name, required this.type});
+}
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -693,6 +703,99 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  List<TransitOption> TransitOptions = [];
+
+  Future<List<TransitOption>> findPublicTransportOptions(
+      TextEditingController dep, TextEditingController dest) async {
+    String departureAddress = dep.text;
+    String destinationAddress = dest.text;
+
+    final transitlandBaseUrl = 'https://transit.land/api/v1/routes?';
+    final apiKey = '650Xk1lrYxc1cCAthBndv12bWhhPCGry';
+
+    final apiUrl = '$transitlandBaseUrl' +
+        'origin_onestop_id=$departureAddress' +
+        '&destination_onestop_id=$destinationAddress';
+
+    final response = await http.get(
+      Uri.parse(apiUrl),
+      headers: {'Api-Key': apiKey},
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+
+      List<Map<String, dynamic>> routes =
+          (responseData['routes'] as List).cast<Map<String, dynamic>>();
+
+      List<TransitOption> options = [];
+
+      for (var route in routes) {
+        final name = route['name'];
+        final type = route['vehicle_type'];
+
+        options.add(TransitOption(name: name, type: type));
+      }
+
+      return options;
+    } else {
+      throw Exception('Failed to fetch data');
+    }
+  }
+
+  TimeOfDay _timeOfDay = TimeOfDay.now();
+
+  void _showTimePicker() {
+    showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    ).then((value) {
+      setState(() {
+        _timeOfDay = value!;
+      });
+    });
+  }
+
+  bool willArriveOnTime(String formattedArrivalTime) {
+    TimeOfDay arrivalTime = TimeOfDay(
+      hour: int.parse(formattedArrivalTime.split(':')[0]),
+      minute: int.parse(formattedArrivalTime.split(':')[1]),
+    );
+    return _timeOfDay.hour > arrivalTime.hour ||
+        (_timeOfDay.hour == arrivalTime.hour &&
+            _timeOfDay.minute >= arrivalTime.minute);
+  }
+
+  List<String> arrivalTimeAdvice = [];
+
+  List<String> _travelModesArrivingOnTime() {
+    String carArrivalTime = calculateArrivalTime(durationCar);
+    String bikeArrivalTime = calculateArrivalTime(durationBike);
+    String footArrivalTime = calculateArrivalTime(durationFoot);
+
+    bool willCarArriveOnTime = willArriveOnTime(carArrivalTime);
+    bool willBikeArriveOnTime = willArriveOnTime(bikeArrivalTime);
+    bool willFootArriveOnTime = willArriveOnTime(footArrivalTime);
+
+    if (willCarArriveOnTime) {
+      arrivalTimeAdvice.add("Will arrive in time in car 🟢");
+    } else {
+      arrivalTimeAdvice.add("Will arrive in time in car 🔴");
+    }
+    if (willBikeArriveOnTime) {
+      arrivalTimeAdvice.add("Will arrive in time in bike 🟢");
+    } else {
+      arrivalTimeAdvice.add("Will arrive in time in bike 🔴");
+    }
+    if (willFootArriveOnTime) {
+      arrivalTimeAdvice.add("Will arrive in time by walk 🟢");
+    } else {
+      arrivalTimeAdvice.add("Will arrive in time by walk 🔴");
+    }
+
+    return arrivalTimeAdvice;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -737,15 +840,45 @@ class _SearchPageState extends State<SearchPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
+                Container(
+                  alignment: Alignment.topRight,
+                  child: DropdownButton<Language>(
+                    hint: Text(translation(context).changeLanguages),
+                    items: Language.languageList()
+                        .map<DropdownMenuItem<Language>>(
+                          (e) => DropdownMenuItem<Language>(
+                            value: e,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Text(e.flag),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (Language? language) async {
+                      //do something
+                      if (language != null) {
+                        Locale _locale = await setLocale(language.languageCode);
+                        MyApp.setLocale(context, _locale);
+                      }
+                    },
+                  ),
+                ),
+
                 const SizedBox(
                   height: 20,
                 ),
+
                 TypeAheadField(
                   textFieldConfiguration: TextFieldConfiguration(
                     controller: start,
                     decoration: InputDecoration(
                       labelText: translation(context).departure,
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.my_location),
                         onPressed: getCurrentLocation,
@@ -814,7 +947,9 @@ class _SearchPageState extends State<SearchPage> {
                     controller: end,
                     decoration: InputDecoration(
                       labelText: translation(context).arrival,
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.my_location),
                         onPressed: getCurrentLocationArrival,
@@ -871,6 +1006,64 @@ class _SearchPageState extends State<SearchPage> {
                 const SizedBox(
                   height: 20,
                 ),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    MaterialButton(
+                      onPressed: _showTimePicker,
+                      color: Colors.green.shade800,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.access_time,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 5),
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Text(
+                              translation(context).arrivalTime,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 20,
+                    ),
+
+                    // Display chosen time
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        _timeOfDay.format(context).toString(),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(
+                  height: 20,
+                ),
+
                 DropdownButton<String>(
                   value: selectedPurpose,
                   onChanged: (String? newValue) {
@@ -890,14 +1083,23 @@ class _SearchPageState extends State<SearchPage> {
                   height: 20,
                 ),
                 ElevatedButton(
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.black),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade800,
+                    ),
                     onPressed: () async {
                       storeRequest();
                       // Execute getRoute() for different travel modes
                       await getRouteForTravelMode('car'); // Car
                       await getRouteForTravelMode('bike'); // Bike
                       await getRouteForTravelMode('foot'); // Foot
+
+                      _travelModesArrivingOnTime();
+
+                      final options =
+                          await findPublicTransportOptions(start, end);
+                      setState(() {
+                        TransitOptions = options;
+                      });
 
                       //const HealthIrregularityChecker();
                       //_fetchData();
@@ -943,8 +1145,8 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           backgroundColor: determineBestTravelMode() ==
                                   translation(context).byCar
-                              ? Colors.grey.shade600
-                              : Colors.grey.shade200,
+                              ? Colors.green.shade600
+                              : Colors.green.shade50,
                           textColor: determineBestTravelMode() ==
                                   translation(context).byCar
                               ? Colors.white
@@ -972,8 +1174,8 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           backgroundColor: determineBestTravelMode() ==
                                   translation(context).byBike
-                              ? Colors.grey.shade600
-                              : Colors.grey.shade200,
+                              ? Colors.green.shade600
+                              : Colors.green.shade50,
                           textColor: determineBestTravelMode() ==
                                   translation(context).byBike
                               ? Colors.white
@@ -1001,12 +1203,39 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           backgroundColor: determineBestTravelMode() ==
                                   translation(context).onFoot
-                              ? Colors.grey.shade600
-                              : Colors.grey.shade200,
+                              ? Colors.green.shade600
+                              : Colors.green.shade50,
                           textColor: determineBestTravelMode() ==
                                   translation(context).onFoot
                               ? Colors.white
                               : Colors.black,
+                        ),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        TransitOptions.isNotEmpty
+                            ? TransitOptionsList(transitOptions: TransitOptions)
+                            : SizedBox(),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        Container(
+                          padding: const EdgeInsets.all(30),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            arrivalTimeAdvice.join("\n\n"),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
 
                         const SizedBox(

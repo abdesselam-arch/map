@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -20,11 +21,31 @@ class _MapPageState extends State<MapPage> {
   String weatherDescription = '';
   double temperature = 0;
   String iconUrl = '';
+  double _latitude = 0.0;
+  double _longitude = 0.0;
 
   @override
   void initState() {
     super.initState();
     fetchWeatherData();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+        // Center the map on the fetched location
+        point = LatLng(_latitude, _longitude);
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   void fetchWeatherData() async {
@@ -64,7 +85,7 @@ class _MapPageState extends State<MapPage> {
                             fetchWeatherData();
                           });
                         },
-                        center: const LatLng(35.3004743, -1.3710402),
+                        center: point,
                         zoom: _zoomLevel,
                       ),
                       children: [
@@ -108,9 +129,11 @@ class _MapPageState extends State<MapPage> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text('${translation(context).temp} ${temperature.toStringAsFixed(1)}°C'),
+                            Text(
+                                '${translation(context).temp} ${temperature.toStringAsFixed(1)}°C'),
                             const SizedBox(height: 4),
-                            Text('${translation(context).descMeteo} $weatherDescription'),
+                            Text(
+                                '${translation(context).descMeteo} $weatherDescription'),
                             const SizedBox(height: 4),
                             if (iconUrl.isNotEmpty)
                               Image.network(

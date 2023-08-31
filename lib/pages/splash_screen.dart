@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.white,
       body: Center(
         child: Image.asset(
-          'images/logo2.jpg',
+          'images/Aspire+ZayedUni.jpg',
         ),
       ),
     );

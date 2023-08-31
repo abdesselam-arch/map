@@ -3,6 +3,7 @@
     "search": "Search",
     "settings": "Settings",
     "changeLanguage": "Change Language",
+    "changeLanguages": "🇬🇧",
     "welcomeBack": "Welcome back!",
     "email": "Email",
     "passWord": "Password",
@@ -38,5 +39,7 @@
     "travelMean": "Travel mean: ",
     "weatherInformations": "Weather informations",
     "temp": "Temperature: ",
-    "descMeteo": "Description: "
+    "descMeteo": "Description: ",
+    "arrivalTime": "Arrival Time",
+    "publicTransport": "Public transport options"
 }
