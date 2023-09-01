@@ -47,8 +47,8 @@ class _SearchPageState extends State<SearchPage> {
   // Fuzzy AHP Assigned weights for each Criteria
   final double healthCondition = 0.538;
   final double weatherCondition = 0.2625;
-  final double purposeCondition = 0.121;
-  final double durationCondition = 0.077;
+  final double purposeCondition = 0.077;
+  final double durationCondition = 0.121;
 
   // Health Criteria weight
   double healthCriteriaWeight = 0.0;
@@ -365,34 +365,36 @@ class _SearchPageState extends State<SearchPage> {
   Future _checkForHealthProblems() async {
     if (heartRate != null) {
       if (heartRate! > 60.0) {
-        HealthProblems.add("Heart Rate: $heartRate bpm");
+        HealthProblems.add("${translation(context).heartRate} $heartRate bpm");
         setState(() {});
       }
     }
     if (bodyTemp != null) {
       if (bodyTemp! > 37.0) {
-        HealthProblems.add('Body Tempureture: $bodyTemp °C');
+        HealthProblems.add('${translation(context).bodyTemp} $bodyTemp °C');
       }
     }
     if (respRate != null) {
       if (respRate! > 12.0 && respRate! < 25.0) {
-        HealthProblems.add('Respiratory Rate: $respRate bpm');
+        HealthProblems.add('${translation(context).respRate} $respRate bpm');
       }
     }
     if (bloodPreDia != null && bloodPreSys != null) {
       if ((bloodPreDia! > 60.0 && bloodPreDia! < 80.0) ||
           (bloodPreSys! > 90.0 && bloodPreSys! < 120.0)) {
-        HealthProblems.add('Blood Pressure: $bloodPreSys / $bloodPreDia mmHg');
+        HealthProblems.add(
+            '${translation(context).bloodPressure} $bloodPreSys / $bloodPreDia mmHg');
       }
     }
     if (bloodOxy != null) {
       if (bloodOxy! < 92) {
-        HealthProblems.add('Blood Oxygen saturation low: $bloodOxy %');
+        HealthProblems.add('${translation(context).bloodOxy} $bloodOxy %');
       }
     }
     if (bloodGlucose != null) {
       if (bloodGlucose! > 180) {
-        HealthProblems.add('Blood sugar level: $bloodGlucose mg/dL');
+        HealthProblems.add(
+            '${translation(context).bloodSugar} $bloodGlucose mg/dL');
       }
     }
     if (HealthProblems.length > 3) {
@@ -401,7 +403,7 @@ class _SearchPageState extends State<SearchPage> {
       });
     }
     if (HealthProblems.isEmpty) {
-      HealthProblems.add('There are no obvious Health Problems!');
+      HealthProblems.add(translation(context).noHealthProbs);
     }
 
     setState(() {});
@@ -417,7 +419,7 @@ class _SearchPageState extends State<SearchPage> {
 
       print('Health criteria weight: $healthCriteriaWeight');
     } else {
-      healthCriteriaWeight = 0.3;
+      healthCriteriaWeight = 1;
     }
     return healthCriteriaWeight;
   }
@@ -448,24 +450,20 @@ class _SearchPageState extends State<SearchPage> {
 
   List<String> checkForAdvice() {
     if (heartRate! > 60) {
-      adviceList.add("Your heart rate is high. Consider taking a break.");
+      adviceList.add(translation(context).heartRateAdvice);
     }
     if (bloodPreSys! > 90 || bloodPreDia! > 60) {
-      adviceList.add(
-          "Your blood pressure is high. Avoid strenuous activities and travel.");
+      adviceList.add(translation(context).bloodPressureAdvice);
     }
     if (bloodGlucose! > 180) {
-      adviceList.add(
-          "Your blood glucose level is high. Monitor your diet and consider avoiding sugary foods.");
+      adviceList.add(translation(context).bloodGlucoseAdvice);
     }
     if (bloodOxy! < 95) {
-      adviceList.add(
-          "Your blood oxygen level is low. Consider resting and staying indoors.");
+      adviceList.add(translation(context).bloodOxyAdvice);
     }
 
     if (adviceList.isEmpty) {
-      adviceList.add(
-          "Your health condition seems to be normal. Keep up the good work!");
+      adviceList.add(translation(context).healthConditionnormal);
     }
 
     return adviceList;
@@ -778,19 +776,19 @@ class _SearchPageState extends State<SearchPage> {
     bool willFootArriveOnTime = willArriveOnTime(footArrivalTime);
 
     if (willCarArriveOnTime) {
-      arrivalTimeAdvice.add("Will arrive in time in car 🟢");
+      arrivalTimeAdvice.add("${translation(context).arriveincar} 🟢");
     } else {
-      arrivalTimeAdvice.add("Will arrive in time in car 🔴");
+      arrivalTimeAdvice.add("${translation(context).arriveincar} 🔴");
     }
     if (willBikeArriveOnTime) {
-      arrivalTimeAdvice.add("Will arrive in time in bike 🟢");
+      arrivalTimeAdvice.add("${translation(context).arriveinbike} 🟢");
     } else {
-      arrivalTimeAdvice.add("Will arrive in time in bike 🔴");
+      arrivalTimeAdvice.add("${translation(context).arriveinbike} 🔴");
     }
     if (willFootArriveOnTime) {
-      arrivalTimeAdvice.add("Will arrive in time by walk 🟢");
+      arrivalTimeAdvice.add("${translation(context).arrivebywalk} 🟢");
     } else {
-      arrivalTimeAdvice.add("Will arrive in time by walk 🔴");
+      arrivalTimeAdvice.add("${translation(context).arrivebywalk} 🔴");
     }
 
     return arrivalTimeAdvice;
@@ -1112,6 +1110,7 @@ class _SearchPageState extends State<SearchPage> {
                         context: context,
                         builder: (context) => healthCard(
                           HealthProblems: HealthProblems,
+                          context: context,
                         ),
                       );
 
@@ -1130,7 +1129,8 @@ class _SearchPageState extends State<SearchPage> {
                       children: [
                         // RecommendedItem for Car
                         RecommendedItem(
-                          distance: distanceCar,
+                          distance:
+                              double.parse(distanceCar.toStringAsFixed(2)),
                           departure_time: getCurrentTime(),
                           arrival_time: calculateArrivalTime(durationCar),
                           travelMean: '${translation(context).byCar} 🚗',
@@ -1159,7 +1159,8 @@ class _SearchPageState extends State<SearchPage> {
 
                         // RecommendedItem for Bike
                         RecommendedItem(
-                          distance: distanceBike,
+                          distance:
+                              double.parse(distanceBike.toStringAsFixed(2)),
                           departure_time: getCurrentTime(),
                           arrival_time: calculateArrivalTime(durationBike),
                           travelMean: '${translation(context).byBike} 🚲',
@@ -1188,7 +1189,8 @@ class _SearchPageState extends State<SearchPage> {
 
                         // RecommendedItem for Foot
                         RecommendedItem(
-                          distance: distanceFoot,
+                          distance:
+                              double.parse(distanceFoot.toStringAsFixed(2)),
                           departure_time: getCurrentTime(),
                           arrival_time: calculateArrivalTime(durationFoot),
                           travelMean: '${translation(context).onFoot} 🚶',

@@ -101,6 +101,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: emailController,
                     hintText: translation(context).email,
                     obscureText: false,
+                    suffixIcon: Icons.mail,
                   ),
             
                   const SizedBox(height: 15),
@@ -110,6 +111,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: passwordController,
                     hintText: translation(context).passWord,
                     obscureText: true,
+                    suffixIcon: Icons.password,
                   ),
             
                   const SizedBox(height: 15),
@@ -119,6 +121,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: confirmPasswordController,
                     hintText: translation(context).confirmPassword,
                     obscureText: true,
+                    suffixIcon: Icons.password,
                   ),
             
                   const SizedBox(height: 15),

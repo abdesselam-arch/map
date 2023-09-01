@@ -4,12 +4,14 @@ class MyTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final bool obscureText;
+  final IconData suffixIcon;
 
   const MyTextField({
     super.key,
     required this.controller,
     required this.hintText,
     required this.obscureText,
+    required this.suffixIcon,
   });
 
   @override
@@ -24,6 +26,7 @@ class MyTextField extends StatelessWidget {
             color: Colors.green.shade600,
           ),
         ),
+        suffixIcon: Icon(suffixIcon),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
           borderSide: BorderSide(

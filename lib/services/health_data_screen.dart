@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:health/health.dart';
+import 'package:map/classes/language_constants.dart';
 
 void main() => runApp(const HealthApp());
 
@@ -193,6 +194,7 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
 Widget healthCard({
   // ignore: non_constant_identifier_names
   required final List<String> HealthProblems,
+  required final BuildContext context,
 }) {
   return Dialog(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -202,9 +204,9 @@ Widget healthCard({
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Health problems detected',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          Text(
+            translation(context).healthProblemsDetected,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(
             height: 10,

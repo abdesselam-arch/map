@@ -41,5 +41,21 @@
     "temp": "Température: ",
     "descMeteo": "Déscription: ",
     "arrivalTime": "heure d'arrivée",
-    "publicTransport": "Transports en commun"
+    "publicTransport": "Transports en commun",
+    "heartRateAdvice": "Votre fréquence cardiaque est élevée. Pensez à faire une pause.",
+    "bloodPressureAdvice": "Votre tension artérielle est élevée. Évitez les activités intenses et les voyages.",
+    "bloodGlucoseAdvice": "Votre glycémie est élevée. Surveillez votre alimentation et envisagez d'éviter les aliments sucrés.",
+    "bloodOxyAdvice": "Votre niveau d'oxygène dans le sang est faible. Pensez à vous reposer et à rester à l'intérieur.",
+    "healthConditionnormal": "Votre état de santé semble normal. Continuez votre bon travail !",
+    "heartRate": "Rythme cardiaque: ",
+    "bodyTemp": "Température corporelle: ",
+    "respRate": "Fréquence respiratoire: ",
+    "bloodPressure": "Pression artérielle: ",
+    "bloodOxy": "Saturation en oxygène du sang faible: ",
+    "bloodSugar": "Niveau de sucre dans le sang: ",
+    "noHealthProbs": "Il n'y a aucun problème de santé évident!",
+    "arriveincar": "Arrivera à temps en voiture",
+    "arriveinbike": "Arrivera à temps en vélo",
+    "arrivebywalk": "Arrivera à temps à pied",
+    "healthProblemsDetected": "Problèmes de santé détectés"
 }

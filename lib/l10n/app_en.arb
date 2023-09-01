@@ -41,5 +41,21 @@
     "temp": "Temperature: ",
     "descMeteo": "Description: ",
     "arrivalTime": "Arrival Time",
-    "publicTransport": "Public transport options"
+    "publicTransport": "Public transport options",
+    "heartRateAdvice": "Your heart rate is high. Consider taking a break.",
+    "bloodPressureAdvice": "Your blood pressure is high. Avoid strenuous activities and travel.",
+    "bloodGlucoseAdvice": "Your blood glucose level is high. Monitor your diet and consider avoiding sugary foods.",
+    "bloodOxyAdvice": "Your blood oxygen level is low. Consider resting and staying indoors.",
+    "healthConditionnormal": "Your health condition seems to be normal. Keep up the good work!",
+    "heartRate": "Heart rate: ",
+    "bodyTemp": "Body temparture: ",
+    "respRate": "Respiratory rate: ",
+    "bloodPressure": "Blood pressure: ",
+    "bloodOxy": "Blood Oxygen saturation low: ",
+    "bloodSugar": "Blood sugar level: ",
+    "noHealthProbs": "There are no obvious Health Problems!",
+    "arriveincar": "Will arrive in time in car",
+    "arriveinbike": "Will arrive in time in bike",
+    "arrivebywalk": "Will arrive in time by walk",
+    "healthProblemsDetected": "Health problems detected"
 }

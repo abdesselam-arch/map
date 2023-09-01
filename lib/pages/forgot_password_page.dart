@@ -64,6 +64,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               controller: emailController,
               hintText: translation(context).email,
               obscureText: false,
+              suffixIcon: Icons.outgoing_mail,
             ),
           ),
 
