@@ -176,6 +176,10 @@ class _SearchPageState extends State<SearchPage> {
       weatherWeightBike = 0.333;
       weatherWeightFoot = 0.333;
     }
+
+    print('The weather weight using car: $weatherWeightCar');
+    print('The weather weight using a bike: $weatherWeightBike');
+    print('The weather weight on a walk: $weatherWeightFoot');
   }
 
   void getCurrentLocation() async {
@@ -268,11 +272,16 @@ class _SearchPageState extends State<SearchPage> {
       carPurposeWeight = 0.5;
       footPurposeWeight = 0.2;
       bikePurposeWeight = 0.3;
-    } else if (selectedPurpose == 'Vacation' || selectedPurpose == 'Travel') {
+    } else if (selectedPurpose == 'Vacation' ||
+        selectedPurpose == 'Travel' ||
+        selectedPurpose == 'Shopping' ||
+        selectedPurpose == 'Visit') {
       carPurposeWeight = 0.4; // Moderate weight for car
       bikePurposeWeight = 0.2; // Moderate weight for biking
       footPurposeWeight = 0.4; // Higher weight for walking, ideal for exploring
-    } else if (selectedPurpose == 'Work' || selectedPurpose == 'Education') {
+    } else if (selectedPurpose == 'Work' ||
+        selectedPurpose == 'Education' ||
+        selectedPurpose == 'Other') {
       carPurposeWeight = 0.5; // Moderate weight for car
       footPurposeWeight = 0.25; // Moderate weight for walking
       bikePurposeWeight = 0.25; // Moderate weight for biking
@@ -532,9 +541,12 @@ class _SearchPageState extends State<SearchPage> {
       'Purpose',
       'Travel',
       'Education',
+      'Visit',
+      'Shopping',
       'Medical condition',
       'Work',
-      'Vacation'
+      'Vacation',
+      'Other'
     ];
 
     initialPurpose = translation(context).purposeField;
@@ -806,6 +818,54 @@ class _SearchPageState extends State<SearchPage> {
     //_CalculateHealthWeight();
   }
 
+  String getCurrentLocaleLanguage(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return locale
+        .languageCode; // Returns the current language code (e.g., 'en' for English)
+  }
+
+  Color _changeColorTheme() {
+    final currentLanguage = getCurrentLocaleLanguage(context);
+
+    if (currentLanguage == 'en') {
+      return Colors.red.shade800;
+    } else if (currentLanguage == 'fr') {
+      return Colors.blue.shade800;
+    } else if (currentLanguage == 'ar') {
+      return Colors.green.shade800;
+    }
+
+    return Colors.green.shade800;
+  }
+
+  Color _changeColorTheme600() {
+    final currentLanguage = getCurrentLocaleLanguage(context);
+
+    if (currentLanguage == 'en') {
+      return Colors.red.shade600;
+    } else if (currentLanguage == 'fr') {
+      return Colors.blue.shade600;
+    } else if (currentLanguage == 'ar') {
+      return Colors.green.shade600;
+    }
+
+    return Colors.green.shade600;
+  }
+
+  Color _changeColorTheme50() {
+    final currentLanguage = getCurrentLocaleLanguage(context);
+
+    if (currentLanguage == 'en') {
+      return Colors.red.shade50;
+    } else if (currentLanguage == 'fr') {
+      return Colors.blue.shade50;
+    } else if (currentLanguage == 'ar') {
+      return Colors.green.shade50;
+    }
+
+    return Colors.green.shade50;
+  }
+
   void onStartTextChanged() {
     _updateStartSuggestions(start.text);
   }
@@ -1010,7 +1070,7 @@ class _SearchPageState extends State<SearchPage> {
                   children: [
                     MaterialButton(
                       onPressed: _showTimePicker,
-                      color: Colors.green.shade800,
+                      color: _changeColorTheme(),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -1036,6 +1096,7 @@ class _SearchPageState extends State<SearchPage> {
                         ],
                       ),
                     ),
+
                     const SizedBox(
                       width: 20,
                     ),
@@ -1082,7 +1143,7 @@ class _SearchPageState extends State<SearchPage> {
                 ),
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade800,
+                      backgroundColor: _changeColorTheme(),
                     ),
                     onPressed: () async {
                       storeRequest();
@@ -1104,6 +1165,7 @@ class _SearchPageState extends State<SearchPage> {
                       //_generateTestData();
                       _checkForHealthProblems();
                       _CalculateHealthWeight();
+                      calculateWeatherWeights();
 
                       // ignore: use_build_context_synchronously
                       showDialog(
@@ -1145,8 +1207,8 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           backgroundColor: determineBestTravelMode() ==
                                   translation(context).byCar
-                              ? Colors.green.shade600
-                              : Colors.green.shade50,
+                              ? _changeColorTheme600()
+                              : _changeColorTheme50(),
                           textColor: determineBestTravelMode() ==
                                   translation(context).byCar
                               ? Colors.white
@@ -1175,8 +1237,8 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           backgroundColor: determineBestTravelMode() ==
                                   translation(context).byBike
-                              ? Colors.green.shade600
-                              : Colors.green.shade50,
+                              ? _changeColorTheme600()
+                              : _changeColorTheme50(),
                           textColor: determineBestTravelMode() ==
                                   translation(context).byBike
                               ? Colors.white
@@ -1205,8 +1267,8 @@ class _SearchPageState extends State<SearchPage> {
                           },
                           backgroundColor: determineBestTravelMode() ==
                                   translation(context).onFoot
-                              ? Colors.green.shade600
-                              : Colors.green.shade50,
+                              ? _changeColorTheme600()
+                              : _changeColorTheme50(),
                           textColor: determineBestTravelMode() ==
                                   translation(context).onFoot
                               ? Colors.white
@@ -1218,7 +1280,10 @@ class _SearchPageState extends State<SearchPage> {
                         ),
 
                         TransitOptions.isNotEmpty
-                            ? TransitOptionsList(transitOptions: TransitOptions)
+                            ? TransitOptionsList(
+                                transitOptions: TransitOptions,
+                                context: context,
+                              )
                             : SizedBox(),
 
                         const SizedBox(
@@ -1228,7 +1293,7 @@ class _SearchPageState extends State<SearchPage> {
                         Container(
                           padding: const EdgeInsets.all(30),
                           decoration: BoxDecoration(
-                            color: Colors.green.shade50,
+                            color: _changeColorTheme50(),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(

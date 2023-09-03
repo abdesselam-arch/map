@@ -54,6 +54,26 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+    String getCurrentLocaleLanguage(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return locale
+        .languageCode; // Returns the current language code (e.g., 'en' for English)
+  }
+
+  Color _changeColorTheme900() {
+    final currentLanguage = getCurrentLocaleLanguage(context);
+
+    if (currentLanguage == 'en') {
+      return Colors.red.shade900;
+    } else if (currentLanguage == 'fr') {
+      return Colors.blue.shade900;
+    } else if (currentLanguage == 'ar') {
+      return Colors.green.shade900;
+    }
+
+    return Colors.green.shade900;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,6 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                     hintText: translation(context).email,
                     obscureText: false,
                     suffixIcon: Icons.mail,
+                    context: context,
                   ),
 
                   const SizedBox(height: 15),
@@ -98,6 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                     hintText: translation(context).passWord,
                     obscureText: true,
                     suffixIcon: Icons.password,
+                    context: context,
                   ),
 
                   const SizedBox(height: 15),
@@ -124,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                             translation(context).forgotPassButton,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.green.shade900,
+                              color: _changeColorTheme900(),
                             ),
                           ),
                         ),
@@ -138,6 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                   MyButton(
                     onTap: signIn,
                     text: translation(context).singIn,
+                    context: context,
                   ),
 
                   const SizedBox(height: 15),
@@ -154,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                           translation(context).registerNow,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.green.shade900,
+                            color: _changeColorTheme900(),
                           ),
                         ),
                       ),

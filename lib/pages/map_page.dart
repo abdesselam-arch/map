@@ -16,20 +16,14 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   final double _zoomLevel = 8.0;
-  LatLng point = const LatLng(35.3004743, -1.3710402);
+  LatLng point = LatLng(0, 0);
 
   String weatherDescription = '';
   double temperature = 0;
   String iconUrl = '';
   double _latitude = 0.0;
   double _longitude = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchWeatherData();
-    _getCurrentLocation();
-  }
+  MapController mapController = MapController();
 
   Future<void> _getCurrentLocation() async {
     try {
@@ -42,6 +36,10 @@ class _MapPageState extends State<MapPage> {
         _longitude = position.longitude;
         // Center the map on the fetched location
         point = LatLng(_latitude, _longitude);
+        // Now set the center of the map
+        mapController.move(point, _zoomLevel);
+
+        print('The Center Coordinations: $_latitude and $_longitude');
       });
     } catch (e) {
       print(e);
@@ -68,7 +66,15 @@ class _MapPageState extends State<MapPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    fetchWeatherData();
+    _getCurrentLocation();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    point = LatLng(_latitude, _longitude);
     return Scaffold(
       body: Center(
         child: Container(
@@ -78,6 +84,7 @@ class _MapPageState extends State<MapPage> {
                 child: Stack(
                   children: [
                     FlutterMap(
+                      mapController: mapController,
                       options: MapOptions(
                         onTap: (p, LatLng) async {
                           setState(() {

@@ -73,6 +73,26 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  String getCurrentLocaleLanguage(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return locale
+        .languageCode; // Returns the current language code (e.g., 'en' for English)
+  }
+
+  Color _changeColorTheme() {
+    final currentLanguage = getCurrentLocaleLanguage(context);
+
+    if (currentLanguage == 'en') {
+      return Colors.red.shade500;
+    } else if (currentLanguage == 'fr') {
+      return Colors.blue.shade500;
+    } else if (currentLanguage == 'ar') {
+      return Colors.green.shade500;
+    }
+
+    return Colors.green.shade500;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,6 +151,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   text: userData['email'],
                   sectionName: translation(context).email,
                   onPressed: () => editField('email'),
+                  context: context,
                 ),
 
                 // user password
@@ -142,6 +163,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   text: userData['password'],
                   sectionName: translation(context).passWord,
                   onPressed: () => editField('password'),
+                  context: context,
                 ),
 
                 const SizedBox(
@@ -186,7 +208,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   onPressed: () {
                     FirebaseAuth.instance.signOut();
                   },
-                  backgroundColor: Colors.green.shade500,
+                  backgroundColor: _changeColorTheme(),
                   child: const Icon(Icons.logout_outlined),
                 ),
               ],

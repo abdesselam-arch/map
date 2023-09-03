@@ -36,22 +36,24 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     try {
-
       // create user
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
 
-      FirebaseFirestore.instance.collection("Users").doc(userCredential.user!.email).set({
+      FirebaseFirestore.instance
+          .collection("Users")
+          .doc(userCredential.user!.email)
+          .set({
         'email': emailController.text,
         'password': passwordController.text
       });
 
-      if(context.mounted) {
+      if (context.mounted) {
         Navigator.pop(context);
       }
-      
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
       print(e.code);
@@ -66,6 +68,26 @@ class _RegisterPageState extends State<RegisterPage> {
         title: Text(message),
       ),
     );
+  }
+
+      String getCurrentLocaleLanguage(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return locale
+        .languageCode; // Returns the current language code (e.g., 'en' for English)
+  }
+
+  Color _changeColorTheme900() {
+    final currentLanguage = getCurrentLocaleLanguage(context);
+
+    if (currentLanguage == 'en') {
+      return Colors.red.shade900;
+    } else if (currentLanguage == 'fr') {
+      return Colors.blue.shade900;
+    } else if (currentLanguage == 'ar') {
+      return Colors.green.shade900;
+    }
+
+    return Colors.green.shade900;
   }
 
   @override
@@ -86,54 +108,58 @@ class _RegisterPageState extends State<RegisterPage> {
                     width: 200,
                     height: 200,
                   ),
-            
+
                   const SizedBox(height: 5),
-            
+
                   //Welcome back!
                   Text(
                     translation(context).createAnAccount,
                   ),
-            
+
                   const SizedBox(height: 25),
-            
+
                   //email textfield
                   MyTextField(
                     controller: emailController,
                     hintText: translation(context).email,
                     obscureText: false,
                     suffixIcon: Icons.mail,
+                    context: context,
                   ),
-            
+
                   const SizedBox(height: 15),
-            
+
                   //password textfield
                   MyTextField(
                     controller: passwordController,
                     hintText: translation(context).passWord,
                     obscureText: true,
                     suffixIcon: Icons.password,
+                    context: context,
                   ),
-            
+
                   const SizedBox(height: 15),
-            
+
                   //confirm password textfield
                   MyTextField(
                     controller: confirmPasswordController,
                     hintText: translation(context).confirmPassword,
                     obscureText: true,
                     suffixIcon: Icons.password,
+                    context: context,
                   ),
-            
+
                   const SizedBox(height: 15),
-            
+
                   //Sign in button
                   MyButton(
                     onTap: signUp,
                     text: translation(context).signUp,
+                    context: context,
                   ),
-            
+
                   const SizedBox(height: 15),
-            
+
                   // go to register page
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -146,7 +172,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           translation(context).loginNow,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.green.shade900,
+                            color: _changeColorTheme900(),
                           ),
                         ),
                       ),
