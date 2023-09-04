@@ -81,6 +81,24 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  double getCurrentLocaleLanguageW(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode == 'en' || locale.languageCode == 'fr') {
+      return 10;
+    } else {
+      return 145;
+    }
+  }
+
+  double getCurrentLocaleLanguageleft(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode == 'en' || locale.languageCode == 'fr') {
+      return 10;
+    } else {
+      return 190;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -135,7 +153,7 @@ class _MapPageState extends State<MapPage> {
                     ),
                     Positioned(
                       top: 40,
-                      left: 10,
+                      left: getCurrentLocaleLanguageW(context),
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -171,7 +189,7 @@ class _MapPageState extends State<MapPage> {
                     ),
                     Positioned(
                       top: getCurrentLocaleLanguagedouble(context),
-                      left: 10,
+                      left: getCurrentLocaleLanguageleft(context),
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
