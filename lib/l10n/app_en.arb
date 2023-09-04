@@ -60,5 +60,9 @@
     "arriveincar": "Will arrive in time in car",
     "arriveinbike": "Will arrive in time in bike",
     "arrivebywalk": "Will arrive in time by walk",
-    "healthProblemsDetected": "Health problems detected"
+    "healthProblemsDetected": "Health problems detected",
+    "currentTimeAndDate": "Current Time and Date",
+    "timeOfDay": "Time of day:",
+    "date": "The date:",
+    "options": "Options you can add"
 }

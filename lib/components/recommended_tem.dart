@@ -9,6 +9,7 @@ class RecommendedItem extends StatelessWidget {
   final void Function()? onPressed;
   final Color backgroundColor;
   final Color textColor;
+  final String willArriveOnTime;
 
   const RecommendedItem({
     super.key,
@@ -19,6 +20,7 @@ class RecommendedItem extends StatelessWidget {
     required this.onPressed,
     required this.backgroundColor,
     required this.textColor,
+    required this.willArriveOnTime,
   });
 
   @override
@@ -89,12 +91,20 @@ class RecommendedItem extends StatelessWidget {
                         fontSize: 13,
                       ),
                     ),
-                    Text(
-                      arrival_time,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 13,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          arrival_time,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(willArriveOnTime),
+                      ],
                     ),
                     const SizedBox(
                       height: 10,

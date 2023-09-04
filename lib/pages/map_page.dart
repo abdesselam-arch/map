@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -15,7 +16,7 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  final double _zoomLevel = 8.0;
+  final double _zoomLevel = 15.0;
   LatLng point = LatLng(0, 0);
 
   String weatherDescription = '';
@@ -65,6 +66,21 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  String getCurrentLocaleLanguage(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return locale
+        .languageCode; // Returns the current language code (e.g., 'en' for English)
+  }
+
+  double getCurrentLocaleLanguagedouble(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode == 'en' || locale.languageCode == 'fr') {
+      return 170;
+    } else {
+      return 200;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -74,6 +90,7 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
+    final String currentLanguage = getCurrentLocaleLanguage(context);
     point = LatLng(_latitude, _longitude);
     return Scaffold(
       body: Center(
@@ -148,6 +165,37 @@ class _MapPageState extends State<MapPage> {
                                 height: 40,
                                 width: 40,
                               ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: getCurrentLocaleLanguagedouble(context),
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              translation(context).currentTimeAndDate,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${translation(context).timeOfDay} ${TimeOfDay.now().hour}:${TimeOfDay.now().minute}',
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${translation(context).date} ${DateFormat('d MMMM y', currentLanguage).format(DateTime.now())}',
+                            ),
                           ],
                         ),
                       ),

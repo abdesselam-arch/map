@@ -776,6 +776,39 @@ class _SearchPageState extends State<SearchPage> {
             _timeOfDay.minute >= arrivalTime.minute);
   }
 
+  String carArriveInTime() {
+    String carArrivalTime = calculateArrivalTime(durationCar);
+    bool willCarArriveOnTime = willArriveOnTime(carArrivalTime);
+
+    if (willCarArriveOnTime) {
+      return '🟢';
+    } else {
+      return '🔴';
+    }
+  }
+
+  String bikeArriveInTime() {
+    String bikeArrivalTime = calculateArrivalTime(durationBike);
+    bool willBikeArriveOnTime = willArriveOnTime(bikeArrivalTime);
+
+    if (willBikeArriveOnTime) {
+      return '🟢';
+    } else {
+      return '🔴';
+    }
+  }
+
+  String footArriveInTime() {
+    String footArrivalTime = calculateArrivalTime(durationFoot);
+    bool willfootArriveOnTime = willArriveOnTime(footArrivalTime);
+
+    if (willfootArriveOnTime) {
+      return '🟢';
+    } else {
+      return '🔴';
+    }
+  }
+
   List<String> arrivalTimeAdvice = [];
 
   List<String> _travelModesArrivingOnTime() {
@@ -1065,58 +1098,82 @@ class _SearchPageState extends State<SearchPage> {
                   height: 20,
                 ),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    MaterialButton(
-                      onPressed: _showTimePicker,
-                      color: _changeColorTheme(),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.access_time,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 5),
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Text(
-                              translation(context).arrivalTime,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(
-                      width: 20,
-                    ),
-
-                    // Display chosen time
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        _timeOfDay.format(context).toString(),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: _changeColorTheme50(),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        translation(context).options,
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            MaterialButton(
+                              onPressed: _showTimePicker,
+                              color: _changeColorTheme(),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.access_time,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text(
+                                      translation(context).arrivalTime,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            // Display chosen time
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                _timeOfDay.format(context).toString(),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 const SizedBox(
@@ -1213,6 +1270,7 @@ class _SearchPageState extends State<SearchPage> {
                                   translation(context).byCar
                               ? Colors.white
                               : Colors.black,
+                          willArriveOnTime: carArriveInTime(),
                         ),
 
                         const SizedBox(
@@ -1243,6 +1301,7 @@ class _SearchPageState extends State<SearchPage> {
                                   translation(context).byBike
                               ? Colors.white
                               : Colors.black,
+                          willArriveOnTime: bikeArriveInTime(),
                         ),
 
                         const SizedBox(
@@ -1273,6 +1332,7 @@ class _SearchPageState extends State<SearchPage> {
                                   translation(context).onFoot
                               ? Colors.white
                               : Colors.black,
+                          willArriveOnTime: footArriveInTime(),
                         ),
 
                         const SizedBox(
@@ -1289,7 +1349,7 @@ class _SearchPageState extends State<SearchPage> {
                         const SizedBox(
                           height: 15,
                         ),
-
+/*
                         Container(
                           padding: const EdgeInsets.all(30),
                           decoration: BoxDecoration(
@@ -1308,6 +1368,7 @@ class _SearchPageState extends State<SearchPage> {
                         const SizedBox(
                           height: 15,
                         ),
+*/
 
                         Text(
                           adviceList.join("\n\n"),

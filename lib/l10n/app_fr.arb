@@ -60,5 +60,9 @@
     "arriveincar": "Arrivera à temps en voiture",
     "arriveinbike": "Arrivera à temps en vélo",
     "arrivebywalk": "Arrivera à temps à pied",
-    "healthProblemsDetected": "Problèmes de santé détectés"
+    "healthProblemsDetected": "Problèmes de santé détectés",
+    "currentTimeAndDate": "Heure et date actuelles",
+    "timeOfDay": "Le temps:",
+    "date": "La date:",
+    "options": "Options que vous pouvez ajouter"
 }

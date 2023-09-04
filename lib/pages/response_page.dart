@@ -22,7 +22,7 @@ class _ResponsePageState extends State<ResponsePage> {
     return FlutterMap(
       options: MapOptions(
         center: routpoints[0],
-        zoom: 10,
+        zoom: 17,
       ),
       children: [
         TileLayer(

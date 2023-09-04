@@ -60,5 +60,9 @@
     "arriveincar": "سيصل في الوقت المناسب بالسيارة",
     "arriveinbike": "سيصل في الوقت المناسب بالدراجة",
     "arrivebywalk": "سوف يصل في الوقت المناسب سيرا على الأقدام",
-    "healthProblemsDetected": "تم اكتشاف مشاكل صحية"
+    "healthProblemsDetected": "تم اكتشاف مشاكل صحية",
+    "currentTimeAndDate": "الوقت والتاريخ الحاليين",
+    "timeOfDay": ":وقت اليوم",
+    "date": ":التاريخ",
+    "options": "الخيارات التي يمكنك إضافتها"
 }
