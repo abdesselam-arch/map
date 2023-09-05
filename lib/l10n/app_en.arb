@@ -64,5 +64,7 @@
     "currentTimeAndDate": "Current Time and Date",
     "timeOfDay": "Time of day:",
     "date": "The date:",
-    "options": "Options you can add"
+    "options": "Options you can add",
+    "departureTime": "Departure Time",
+    "departureDate": "Departure Date"
 }

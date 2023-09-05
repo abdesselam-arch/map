@@ -118,10 +118,13 @@ class _SearchPageState extends State<SearchPage> {
   String weatherDescription = '';
   double temperature = 0;
 
-  void fetchWeatherData(TextEditingController controller) async {
+  void fetchWeatherData(TextEditingController controller, DateTime date) async {
     const apiKey = '9288b0a87c194f099c4a28c2322ca8c0';
+    final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    String location = controller.text;
+
     final url =
-        'https://api.openweathermap.org/data/2.5/weather?location=$controller&units=metric&appid=$apiKey';
+        'https://api.openweathermap.org/data/2.5/weather?q=$location&dt=$formattedDate&units=metric&appid=$apiKey';
 
     final response = await http.get(Uri.parse(url));
 
@@ -572,10 +575,27 @@ class _SearchPageState extends State<SearchPage> {
     return formattedTime;
   }
 
-  String calculateArrivalTime(double durationMin) {
-    DateTime now = DateTime.now();
-    DateTime arrivalTime = now.add(Duration(minutes: durationMin.toInt()));
-    String formattedArrivalTime = DateFormat('HH:mm:ss').format(arrivalTime);
+  String calculateArrivalTime(double durationMin, String formattedTime) {
+    final timeParts = formattedTime.split(':');
+    if (timeParts.length != 3) {
+      // Handle invalid formattedTime input here
+      return 'Invalid Time';
+    }
+
+    final hours = int.parse(timeParts[0]);
+    final minutes = int.parse(timeParts[1]);
+    final seconds = int.parse(timeParts[2]);
+
+    final totalSeconds = hours * 3600 + minutes * 60 + seconds;
+    final arrivalTimeInSeconds = totalSeconds + (durationMin * 60).toInt();
+
+    final arrivalHours = arrivalTimeInSeconds ~/ 3600;
+    final arrivalMinutes = (arrivalTimeInSeconds % 3600) ~/ 60;
+    final arrivalSeconds = arrivalTimeInSeconds % 60;
+
+    final formattedArrivalTime =
+        '${(arrivalHours % 24).toString().padLeft(2, '0')}:${arrivalMinutes.toString().padLeft(2, '0')}:${arrivalSeconds.toString().padLeft(2, '0')}';
+
     return formattedArrivalTime;
   }
 
@@ -766,6 +786,41 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  TimeOfDay _depTime = TimeOfDay.now();
+
+  void _showDepTimePicker() {
+    showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    ).then((value) {
+      setState(() {
+        _depTime = value!;
+      });
+    });
+  }
+
+  String formatDepTime(TimeOfDay time) {
+    final hours = time.hour.toString().padLeft(2, '0');
+    final minutes = time.minute.toString().padLeft(2, '0');
+    final seconds = '00'; // Since TimeOfDay doesn't include seconds
+    return '$hours:$minutes:$seconds';
+  }
+
+  DateTime _departureDate = DateTime.now();
+
+  void _showDepDatePicker() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2026),
+    ).then((value) {
+      setState(() {
+        _departureDate = value!;
+      });
+    });
+  }
+
   bool willArriveOnTime(String formattedArrivalTime) {
     TimeOfDay arrivalTime = TimeOfDay(
       hour: int.parse(formattedArrivalTime.split(':')[0]),
@@ -777,7 +832,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   String carArriveInTime() {
-    String carArrivalTime = calculateArrivalTime(durationCar);
+    String carArrivalTime =
+        calculateArrivalTime(durationCar, formatDepTime(_depTime));
     bool willCarArriveOnTime = willArriveOnTime(carArrivalTime);
 
     if (willCarArriveOnTime) {
@@ -788,7 +844,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   String bikeArriveInTime() {
-    String bikeArrivalTime = calculateArrivalTime(durationBike);
+    String bikeArrivalTime =
+        calculateArrivalTime(durationBike, formatDepTime(_depTime));
     bool willBikeArriveOnTime = willArriveOnTime(bikeArrivalTime);
 
     if (willBikeArriveOnTime) {
@@ -799,7 +856,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   String footArriveInTime() {
-    String footArrivalTime = calculateArrivalTime(durationFoot);
+    String footArrivalTime =
+        calculateArrivalTime(durationFoot, formatDepTime(_depTime));
     bool willfootArriveOnTime = willArriveOnTime(footArrivalTime);
 
     if (willfootArriveOnTime) {
@@ -812,9 +870,12 @@ class _SearchPageState extends State<SearchPage> {
   List<String> arrivalTimeAdvice = [];
 
   List<String> _travelModesArrivingOnTime() {
-    String carArrivalTime = calculateArrivalTime(durationCar);
-    String bikeArrivalTime = calculateArrivalTime(durationBike);
-    String footArrivalTime = calculateArrivalTime(durationFoot);
+    String carArrivalTime =
+        calculateArrivalTime(durationCar, formatDepTime(_depTime));
+    String bikeArrivalTime =
+        calculateArrivalTime(durationBike, formatDepTime(_depTime));
+    String footArrivalTime =
+        calculateArrivalTime(durationFoot, formatDepTime(_depTime));
 
     bool willCarArriveOnTime = willArriveOnTime(carArrivalTime);
     bool willBikeArriveOnTime = willArriveOnTime(bikeArrivalTime);
@@ -846,7 +907,7 @@ class _SearchPageState extends State<SearchPage> {
     end.addListener(onEndTextChanged);
     _fetchData();
     _generateTestData();
-    fetchWeatherData(end);
+    fetchWeatherData(end, _departureDate);
     //_checkForHealthProblems();
     //_CalculateHealthWeight();
   }
@@ -1120,54 +1181,167 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        child: Column(
                           children: [
-                            MaterialButton(
-                              onPressed: _showTimePicker,
-                              color: _changeColorTheme(),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.access_time,
-                                    color: Colors.white,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                MaterialButton(
+                                  onPressed: _showDepDatePicker,
+                                  color: _changeColorTheme(),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                  const SizedBox(width: 5),
-                                  Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: Text(
-                                      translation(context).arrivalTime,
-                                      style: const TextStyle(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.calendar_month,
                                         color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
                                       ),
+                                      const SizedBox(width: 5),
+                                      Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Text(
+                                          translation(context).departureDate,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 20,
+                                ),
+                                // Display chosen time
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    DateFormat('dd/MM/yyyy')
+                                        .format(_departureDate),
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                             const SizedBox(
-                              width: 20,
+                              height: 4,
                             ),
-                            // Display chosen time
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                _timeOfDay.format(context).toString(),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                MaterialButton(
+                                  onPressed: _showDepTimePicker,
+                                  color: _changeColorTheme(),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.access_time,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Text(
+                                          translation(context).departureTime,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(
+                                  width: 20,
+                                ),
+                                // Display chosen time
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    _depTime.format(context).toString(),
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                MaterialButton(
+                                  onPressed: _showTimePicker,
+                                  color: _changeColorTheme(),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.access_time,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Text(
+                                          translation(context).arrivalTime,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 20,
+                                ),
+                                // Display chosen time
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    _timeOfDay.format(context).toString(),
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -1250,8 +1424,9 @@ class _SearchPageState extends State<SearchPage> {
                         RecommendedItem(
                           distance:
                               double.parse(distanceCar.toStringAsFixed(2)),
-                          departure_time: getCurrentTime(),
-                          arrival_time: calculateArrivalTime(durationCar),
+                          departure_time: formatDepTime(_depTime),
+                          arrival_time: calculateArrivalTime(
+                              durationCar, formatDepTime(_depTime)),
                           travelMean: '${translation(context).byCar} 🚗',
                           onPressed: () {
                             Navigator.push(
@@ -1281,8 +1456,9 @@ class _SearchPageState extends State<SearchPage> {
                         RecommendedItem(
                           distance:
                               double.parse(distanceBike.toStringAsFixed(2)),
-                          departure_time: getCurrentTime(),
-                          arrival_time: calculateArrivalTime(durationBike),
+                          departure_time: formatDepTime(_depTime),
+                          arrival_time: calculateArrivalTime(
+                              durationBike, formatDepTime(_depTime)),
                           travelMean: '${translation(context).byBike} 🚲',
                           onPressed: () {
                             Navigator.push(
@@ -1312,8 +1488,9 @@ class _SearchPageState extends State<SearchPage> {
                         RecommendedItem(
                           distance:
                               double.parse(distanceFoot.toStringAsFixed(2)),
-                          departure_time: getCurrentTime(),
-                          arrival_time: calculateArrivalTime(durationFoot),
+                          departure_time: formatDepTime(_depTime),
+                          arrival_time: calculateArrivalTime(
+                              durationFoot, formatDepTime(_depTime)),
                           travelMean: '${translation(context).onFoot} 🚶',
                           onPressed: () {
                             Navigator.push(
