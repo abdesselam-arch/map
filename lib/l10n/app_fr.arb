@@ -64,7 +64,14 @@
     "currentTimeAndDate": "Heure et date actuelles",
     "timeOfDay": "Le temps:",
     "date": "La date:",
-    "options": "Options que vous pouvez ajouter",
+    "options": "Options à ajouter",
     "departureTime": "heure de départ",
-    "departureDate": "Date de départ" 
+    "departureDate": "Date de départ",
+    "routeInfos": "informations sur l'itinéraire",
+    "duration": "Durée:",
+    "km": "km",
+    "min": "minutes",
+    "noitem": "aucune adresse trouvée !",
+    "selectDepTime": "sélectionner l'heure de départ",
+    "selectArrTime": "sélectionner l'heure d'arrivée"
 }

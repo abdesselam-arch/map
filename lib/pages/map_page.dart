@@ -25,6 +25,7 @@ class _MapPageState extends State<MapPage> {
   double _latitude = 0.0;
   double _longitude = 0.0;
   MapController mapController = MapController();
+  int minutes = TimeOfDay.now().minute;
 
   Future<void> _getCurrentLocation() async {
     try {
@@ -109,6 +110,7 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     final String currentLanguage = getCurrentLocaleLanguage(context);
+    String formattedMinutes = minutes.toString().padLeft(2, '0');
     point = LatLng(_latitude, _longitude);
     return Scaffold(
       body: Center(
@@ -208,7 +210,7 @@ class _MapPageState extends State<MapPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${translation(context).timeOfDay} ${TimeOfDay.now().hour}:${TimeOfDay.now().minute}',
+                              '${translation(context).timeOfDay} ${TimeOfDay.now().hour}:$formattedMinutes',
                             ),
                             const SizedBox(height: 4),
                             Text(

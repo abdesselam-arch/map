@@ -97,132 +97,137 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection("Users")
-            .doc(currentUser.email)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final userData = snapshot.data!.data() as Map<String, dynamic>;
-
-            return ListView(
-              children: [
-                const SizedBox(
-                  height: 20,
-                ),
-                // profile icon
-                Image.asset(
-                  'images/Aspire+ZayedUni.jpg',
-                  width: 200,
-                  height: 200,
-                ),
-
-                // user email
-                const SizedBox(
-                  height: 5,
-                ),
-                Text(
-                  currentUser.email!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.black),
-                ),
-
-                const SizedBox(
-                  height: 50,
-                ),
-
-                // user email field
-                Padding(
-                  padding: const EdgeInsets.only(left: 25.0),
-                  child: Text(
-                    translation(context).myDetails,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
+      body: ScrollConfiguration(
+        behavior: const ScrollBehavior().copyWith(
+          overscroll: false,
+        ),
+        child: StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection("Users")
+              .doc(currentUser.email)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final userData = snapshot.data!.data() as Map<String, dynamic>;
+      
+              return ListView(
+                children: [
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  // profile icon
+                  Image.asset(
+                    'images/Aspire+ZayedUni.jpg',
+                    width: 200,
+                    height: 200,
+                  ),
+      
+                  // user email
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  Text(
+                    currentUser.email!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.black),
+                  ),
+      
+                  const SizedBox(
+                    height: 50,
+                  ),
+      
+                  // user email field
+                  Padding(
+                    padding: const EdgeInsets.only(left: 25.0),
+                    child: Text(
+                      translation(context).myDetails,
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ),
-                ),
-
-                const SizedBox(
-                  height: 10,
-                ),
-
-                MyTextBox(
-                  text: userData['email'],
-                  sectionName: translation(context).email,
-                  onPressed: () => editField('email'),
-                  context: context,
-                ),
-
-                // user password
-                const SizedBox(
-                  height: 10,
-                ),
-
-                MyTextBox(
-                  text: userData['password'],
-                  sectionName: translation(context).passWord,
-                  onPressed: () => editField('password'),
-                  context: context,
-                ),
-
-                const SizedBox(
-                  height: 10,
-                ),
-
-                Container(
-                  child: Center(
-                    child: DropdownButton<Language>(
-                      hint: Text(translation(context).changeLanguage),
-                      items: Language.languageList()
-                          .map<DropdownMenuItem<Language>>(
-                            (e) => DropdownMenuItem<Language>(
-                              value: e,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  Text(e.name),
-                                ],
+      
+                  const SizedBox(
+                    height: 10,
+                  ),
+      
+                  MyTextBox(
+                    text: userData['email'],
+                    sectionName: translation(context).email,
+                    onPressed: () => editField('email'),
+                    context: context,
+                  ),
+      
+                  // user password
+                  const SizedBox(
+                    height: 10,
+                  ),
+      
+                  MyTextBox(
+                    text: userData['password'],
+                    sectionName: translation(context).passWord,
+                    onPressed: () => editField('password'),
+                    context: context,
+                  ),
+      
+                  const SizedBox(
+                    height: 10,
+                  ),
+      
+                  Container(
+                    child: Center(
+                      child: DropdownButton<Language>(
+                        hint: Text(translation(context).changeLanguage),
+                        items: Language.languageList()
+                            .map<DropdownMenuItem<Language>>(
+                              (e) => DropdownMenuItem<Language>(
+                                value: e,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    Text(e.name),
+                                  ],
+                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (Language? language) async {
-                        //do something
-                        if (language != null) {
-                          Locale _locale =
-                              await setLocale(language.languageCode);
-                          MyApp.setLocale(context, _locale);
-                        }
-                      },
+                            )
+                            .toList(),
+                        onChanged: (Language? language) async {
+                          //do something
+                          if (language != null) {
+                            Locale _locale =
+                                await setLocale(language.languageCode);
+                            MyApp.setLocale(context, _locale);
+                          }
+                        },
+                      ),
                     ),
                   ),
-                ),
-
-                const SizedBox(
-                  height: 20,
-                ),
-
-                FloatingActionButton(
-                  onPressed: () {
-                    FirebaseAuth.instance.signOut();
-                  },
-                  backgroundColor: _changeColorTheme(),
-                  child: const Icon(Icons.logout_outlined),
-                ),
-              ],
+      
+                  const SizedBox(
+                    height: 20,
+                  ),
+      
+                  FloatingActionButton(
+                    onPressed: () {
+                      FirebaseAuth.instance.signOut();
+                    },
+                    backgroundColor: _changeColorTheme(),
+                    child: const Icon(Icons.logout_outlined),
+                  ),
+                ],
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text('Error ${snapshot.error}'),
+              );
+            }
+      
+            return const Center(
+              child: CircularProgressIndicator(),
             );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error ${snapshot.error}'),
-            );
-          }
-
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        },
+          },
+        ),
       ),
     );
   }

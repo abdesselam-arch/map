@@ -66,5 +66,12 @@
     "date": "The date:",
     "options": "Options you can add",
     "departureTime": "Departure Time",
-    "departureDate": "Departure Date"
+    "departureDate": "Departure Date",
+    "routeInfos" : "Route informations",
+    "duration": "Duration:",
+    "km": "km",
+    "min": "minutes",
+    "noitem": "Address not found!",
+    "selectDepTime": "Select departure time",
+    "selectArrTime": "Select arrival time"
 }
