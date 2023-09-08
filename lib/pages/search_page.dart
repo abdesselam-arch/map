@@ -790,7 +790,8 @@ class _SearchPageState extends State<SearchPage> {
           _timeOfDay = newTime;
         });
       },
-      initialTime: TimeOfDay.now(), time: 'ff',
+      initialTime: TimeOfDay.now(),
+      time: 'ff',
     );
   }
 
@@ -808,7 +809,8 @@ class _SearchPageState extends State<SearchPage> {
                   _timeOfDay = value;
                 });
               },
-              initialTime: TimeOfDay.now(), time: translation(context).selectArrTime,
+              initialTime: TimeOfDay.now(),
+              time: translation(context).selectArrTime,
             ),
           ),
         );
@@ -832,7 +834,8 @@ class _SearchPageState extends State<SearchPage> {
                   _depTime = value;
                 });
               },
-              initialTime: TimeOfDay.now(), time: translation(context).selectDepTime,
+              initialTime: TimeOfDay.now(),
+              time: translation(context).selectDepTime,
             ),
           ),
         );
@@ -990,6 +993,14 @@ class _SearchPageState extends State<SearchPage> {
     }
 
     return arrivalTimeAdvice;
+  }
+
+  Icon LocIcon(String suggestion) {
+    if (searchHistory.contains(suggestion)) {
+      return const Icon(Icons.redo_rounded);
+    } else {
+      return const Icon(Icons.location_on);
+    }
   }
 
   @override
@@ -1169,7 +1180,7 @@ class _SearchPageState extends State<SearchPage> {
                       final isHistoryItem = searchHistory.contains(suggestion);
 
                       return ListTile(
-                        leading: const Icon(Icons.location_on),
+                        leading: LocIcon(suggestion),
                         title: Text(suggestion.toString()),
                         tileColor: isHistoryItem ? Colors.grey.shade500 : null,
                       );
@@ -1266,16 +1277,18 @@ class _SearchPageState extends State<SearchPage> {
                       final bool isHistoryItem =
                           searchHistory.contains(suggestion);
                       return ListTile(
-                        leading: const Icon(Icons.location_on),
+                        leading: LocIcon(suggestion),
                         title: Text(suggestion.toString()),
-                        tileColor: isHistoryItem ? Colors.grey : null,
+                        tileColor: isHistoryItem ? Colors.grey.shade400 : null,
                       );
                     },
                     onSuggestionSelected: (suggestion) {
                       end.text = suggestion.toString();
 
                       if (!searchHistory.contains(suggestion.toString())) {
-                        searchHistory.add(suggestion.toString());
+                        setState(() {
+                          searchHistory.add(suggestion.toString());
+                        });
                       }
                     },
                     noItemsFoundBuilder: (context) {
