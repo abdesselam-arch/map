@@ -17,6 +17,7 @@ import 'package:map/main.dart';
 import 'package:map/pages/response_page.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:map/services/health_data_screen.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class TransitOption {
   final String name;
@@ -26,7 +27,14 @@ class TransitOption {
 }
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  final ScrollController controller;
+  final PanelController panelcontroller;
+
+  const SearchPage({
+    super.key,
+    required this.controller,
+    required this.panelcontroller,
+  });
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -1033,6 +1041,18 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
+  double widthChanger2() {
+    final currentLanguage = getCurrentLocaleLanguage(context);
+
+    if (currentLanguage == "en") {
+      return 95;
+    } else if (currentLanguage == "ar") {
+      return 120;
+    } else {
+      return 180;
+    }
+  }
+
   Color _changeColorTheme() {
     final currentLanguage = getCurrentLocaleLanguage(context);
 
@@ -1107,713 +1127,739 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    var controller = widget.controller;
     return Scaffold(
       backgroundColor: Colors.white,
       body: ScrollConfiguration(
         behavior: const ScrollBehavior().copyWith(
           overscroll: false,
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(22.0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    alignment: Alignment.topRight,
-                    child: DropdownButton<Language>(
-                      hint: Text(translation(context).changeLanguages),
-                      items: Language.languageList()
-                          .map<DropdownMenuItem<Language>>(
-                            (e) => DropdownMenuItem<Language>(
-                              value: e,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  Text(e.flag),
-                                ],
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (Language? language) async {
-                        //do something
-                        if (language != null) {
-                          Locale _locale =
-                              await setLocale(language.languageCode);
-                          MyApp.setLocale(context, _locale);
-                        }
-                      },
+        child: Padding(
+          padding: const EdgeInsets.all(22.0),
+          child: SingleChildScrollView(
+            controller: controller,
+            child: Column(
+              children: [
+                buildDragHandle(),
+                Row(
+                  children: [
+                    const SizedBox(
+                      width: 2,
                     ),
-                  ),
-
-                  const SizedBox(
-                    height: 20,
-                  ),
-
-                  TypeAheadField(
-                    textFieldConfiguration: TextFieldConfiguration(
-                      controller: start,
-                      decoration: InputDecoration(
-                        labelText: translation(context).departure,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.my_location),
-                          onPressed: getCurrentLocation,
-                        ),
+                    Text(
+                      translation(context).wherewego,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    suggestionsCallback: (pattern) async {
-                      // Fetch auto-completion suggestions for departure
-                      final suggestions =
-                          await _getAutoCompletionSuggestions(pattern);
-                      final combinedSuggestions = [
-                        ...searchHistory,
-                        ...suggestions
-                      ];
-                      return combinedSuggestions;
-                    },
-                    itemBuilder: (context, suggestion) {
-                      final isHistoryItem = searchHistory.contains(suggestion);
-
-                      return ListTile(
-                        leading: LocIcon(suggestion),
-                        title: Text(suggestion.toString()),
-                        tileColor: isHistoryItem ? Colors.grey.shade500 : null,
-                      );
-                    },
-                    onSuggestionSelected: (suggestion) {
-                      start.text = suggestion.toString();
-
-                      if (!searchHistory.contains(suggestion.toString())) {
-                        searchHistory.add(suggestion.toString());
-                      }
-                    },
-                    // Customize the suggestion box appearance
-                    suggestionsBoxDecoration: SuggestionsBoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      elevation: 4.0,
+                    SizedBox(
+                      width: widthChanger2(),
                     ),
-                    noItemsFoundBuilder: (context) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          translation(context).noitem,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors
-                                .grey.shade700, // Adjust the color as needed
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  /*
-                  Autocomplete<String>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (textEditingValue.text == '') {
-                        return const Iterable<String>.empty();
-                      } else {
-                        return startSuggestions.where((String option) {
-                          return option
-                              .toLowerCase()
-                              .contains(textEditingValue.text.toLowerCase());
-                        });
-                      }
-                    },
-                    onSelected: (String selection) {
-                      start.text = selection;
-                    },
-                    fieldViewBuilder: (
-                      BuildContext context,
-                      TextEditingController fieldController,
-                      FocusNode focusNode,
-                      VoidCallback onFieldSubmitted,
-                    ) {
-                      return myInput(
-                        controler: start,
-                        hint: translation(context).departure,
-                      );
-                    },
-                  ),
-      
-                  myInput(
-                    controler: start,
-                    hint: translation(context).departure,
-                  ),*/
-                  const SizedBox(
-                    height: 15,
-                  ),
-
-                  // Search input for arrival with auto-completion
-                  TypeAheadField(
-                    textFieldConfiguration: TextFieldConfiguration(
-                      controller: end,
-                      decoration: InputDecoration(
-                        labelText: translation(context).arrival,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.my_location),
-                          onPressed: getCurrentLocationArrival,
-                        ),
-                      ),
-                    ),
-                    suggestionsCallback: (pattern) async {
-                      // Fetch auto-completion suggestions for arrival
-                      final suggestions =
-                          await _getAutoCompletionSuggestions(pattern);
-                      final combinedSuggestions = [
-                        ...searchHistory,
-                        ...suggestions
-                      ];
-                      return combinedSuggestions;
-                    },
-                    itemBuilder: (context, suggestion) {
-                      final bool isHistoryItem =
-                          searchHistory.contains(suggestion);
-                      return ListTile(
-                        leading: LocIcon(suggestion),
-                        title: Text(suggestion.toString()),
-                        tileColor: isHistoryItem ? Colors.grey.shade400 : null,
-                      );
-                    },
-                    onSuggestionSelected: (suggestion) {
-                      end.text = suggestion.toString();
-
-                      if (!searchHistory.contains(suggestion.toString())) {
-                        setState(() {
-                          searchHistory.add(suggestion.toString());
-                        });
-                      }
-                    },
-                    noItemsFoundBuilder: (context) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          translation(context).noitem,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors
-                                .grey.shade700, // Adjust the color as needed
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  /*
-                  Autocomplete<String>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (textEditingValue.text == '') {
-                        return const Iterable<String>.empty();
-                      } else {
-                        return endSuggestions.where((String option) {
-                          return option
-                              .toLowerCase()
-                              .contains(textEditingValue.text.toLowerCase());
-                        });
-                      }
-                    },
-                    onSelected: (String selection) {
-                      end.text = selection;
-                    },
-                    fieldViewBuilder: (
-                      BuildContext context,
-                      TextEditingController fieldController,
-                      FocusNode focusNode,
-                      VoidCallback onFieldSubmitted,
-                    ) {
-                      return myInput(
-                        controler: end,
-                        hint: translation(context).arrival,
-                      );
-                    },
-                  ),
-      
-                  myInput(
-                    controler: end,
-                    hint: translation(context).arrival,
-                  ),*/
-                  const SizedBox(
-                    height: 20,
-                  ),
-
-                  AnimatedSize(
-                    curve: Curves.easeInOut,
-                    duration: const Duration(milliseconds: 800),
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      margin: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: _changeColorTheme50(),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                translation(context).options,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                    Container(
+                      alignment: Alignment.topRight,
+                      child: DropdownButton<Language>(
+                        hint: Text(translation(context).changeLanguages),
+                        items: Language.languageList()
+                            .map<DropdownMenuItem<Language>>(
+                              (e) => DropdownMenuItem<Language>(
+                                value: e,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    Text(e.flag),
+                                  ],
                                 ),
                               ),
-                              SizedBox(
-                                width: widthChanger(),
-                              ),
-                              Positioned(
-                                top: 10,
-                                right: 10,
-                                child: IconButton(
-                                  onPressed: toggleOptions,
-                                  icon: showOptions
-                                      ? const Icon(Icons.keyboard_arrow_up)
-                                      : const Icon(Icons.keyboard_arrow_down),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Visibility(
-                            visible: showOptions,
-                            maintainAnimation: true,
-                            maintainState: true,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      MaterialButton(
-                                        onPressed: _showDepDatePicker,
-                                        color: _changeColorTheme(),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.calendar_month,
-                                              color: Colors.white,
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(10.0),
-                                              child: Text(
-                                                translation(context)
-                                                    .departureDate,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 20,
-                                      ),
-                                      // Display chosen time
-                                      Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Text(
-                                          DateFormat('dd/MM/yyyy')
-                                              .format(_departureDate),
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(
-                                    height: 4,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      MaterialButton(
-                                        onPressed: () {
-                                          _showCustomDepTimePicker(context);
-                                        },
-                                        color: _changeColorTheme(),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.access_time,
-                                              color: Colors.white,
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(10.0),
-                                              child: Text(
-                                                translation(context)
-                                                    .departureTime,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 20,
-                                      ),
-                                      // Display chosen time
-                                      Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Text(
-                                          _depTime.format(context).toString(),
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(
-                                    height: 4,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      MaterialButton(
-                                        onPressed: () {
-                                          _showCustomTimePicker(context);
-                                        },
-                                        color: _changeColorTheme(),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.access_time,
-                                              color: Colors.white,
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.all(10.0),
-                                              child: Text(
-                                                translation(context)
-                                                    .arrivalTime,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 20,
-                                      ),
-                                      // Display chosen time
-                                      Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: Text(
-                                          _timeOfDay.format(context).toString(),
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                            )
+                            .toList(),
+                        onChanged: (Language? language) async {
+                          //do something
+                          if (language != null) {
+                            Locale _locale =
+                                await setLocale(language.languageCode);
+                            MyApp.setLocale(context, _locale);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(
+                  height: 20,
+                ),
+
+                TypeAheadField(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    controller: start,
+                    decoration: InputDecoration(
+                      labelText: translation(context).departure,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.my_location),
+                        onPressed: getCurrentLocation,
                       ),
                     ),
                   ),
+                  suggestionsCallback: (pattern) async {
+                    // Fetch auto-completion suggestions for departure
+                    final suggestions =
+                        await _getAutoCompletionSuggestions(pattern);
+                    final combinedSuggestions = [
+                      ...searchHistory,
+                      ...suggestions
+                    ];
+                    return combinedSuggestions;
+                  },
+                  itemBuilder: (context, suggestion) {
+                    final isHistoryItem = searchHistory.contains(suggestion);
 
-                  const SizedBox(
-                    height: 20,
+                    return ListTile(
+                      leading: LocIcon(suggestion),
+                      title: Text(suggestion.toString()),
+                      tileColor: isHistoryItem ? Colors.grey.shade500 : null,
+                    );
+                  },
+                  onSuggestionSelected: (suggestion) {
+                    start.text = suggestion.toString();
+
+                    if (!searchHistory.contains(suggestion.toString())) {
+                      searchHistory.add(suggestion.toString());
+                    }
+                  },
+                  // Customize the suggestion box appearance
+                  suggestionsBoxDecoration: SuggestionsBoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                    elevation: 4.0,
                   ),
-
-                  DropdownButton<String>(
-                    value: selectedPurpose,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedPurpose = newValue!;
-                        print('selectedPurpose variable changed');
+                  noItemsFoundBuilder: (context) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        translation(context).noitem,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors
+                              .grey.shade700, // Adjust the color as needed
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                /*
+                Autocomplete<String>(
+                  optionsBuilder: (TextEditingValue textEditingValue) {
+                    if (textEditingValue.text == '') {
+                      return const Iterable<String>.empty();
+                    } else {
+                      return startSuggestions.where((String option) {
+                        return option
+                            .toLowerCase()
+                            .contains(textEditingValue.text.toLowerCase());
                       });
-                    },
-                    items: _purposeList().map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _changeColorTheme(),
+                    }
+                  },
+                  onSelected: (String selection) {
+                    start.text = selection;
+                  },
+                  fieldViewBuilder: (
+                    BuildContext context,
+                    TextEditingController fieldController,
+                    FocusNode focusNode,
+                    VoidCallback onFieldSubmitted,
+                  ) {
+                    return myInput(
+                      controler: start,
+                      hint: translation(context).departure,
+                    );
+                  },
+                ),
+      
+                myInput(
+                  controler: start,
+                  hint: translation(context).departure,
+                ),*/
+                const SizedBox(
+                  height: 15,
+                ),
+
+                // Search input for arrival with auto-completion
+                TypeAheadField(
+                  textFieldConfiguration: TextFieldConfiguration(
+                    controller: end,
+                    decoration: InputDecoration(
+                      labelText: translation(context).arrival,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
                       ),
-                      onPressed: () async {
-                        storeRequest();
-                        // Execute getRoute() for different travel modes
-                        await getRouteForTravelMode('car'); // Car
-                        await getRouteForTravelMode('bike'); // Bike
-                        await getRouteForTravelMode('foot'); // Foot
-                        _travelModesArrivingOnTime();
-
-                        final options =
-                            await findPublicTransportOptions(start, end);
-                        setState(() {
-                          TransitOptions = options;
-                        });
-
-                        //const HealthIrregularityChecker();
-                        //_fetchData();
-                        //_generateTestData();
-                        _checkForHealthProblems();
-                        _CalculateHealthWeight();
-                        calculateWeatherWeights();
-
-                        // ignore: use_build_context_synchronously
-                        showDialog(
-                          context: context,
-                          builder: (context) => healthCard(
-                            HealthProblems: HealthProblems,
-                            context: context,
-                          ),
-                        );
-
-                        checkForAdvice();
-                        CalculateDurationWeight();
-                        calculatePurposeWeight();
-                      },
-                      child: Text(translation(context).submit)),
-                  const SizedBox(
-                    height: 10,
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.my_location),
+                        onPressed: getCurrentLocationArrival,
+                      ),
+                    ),
                   ),
-                  SizedBox(
-                    child: Visibility(
-                      visible: isVisible,
-                      child: Column(
-                        children: [
-                          // RecommendedItem for Car
-                          RecommendedItem(
-                            distance:
-                                double.parse(distanceCar.toStringAsFixed(2)),
-                            departure_time: formatDepTime(_depTime),
-                            arrival_time: calculateArrivalTime(
-                                durationCar, formatDepTime(_depTime)),
-                            travelMean: '${translation(context).byCar} 🚗',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ResponsePage(
-                                    routpoints: routpointsCar,
-                                    duration: double.parse(
-                                        durationCar.toStringAsFixed(0)),
-                                    distance: double.parse(
-                                        distanceCar.toStringAsFixed(2)),
-                                    travelMean: translation(context).byCar,
-                                  ),
-                                ),
-                              );
-                            },
-                            backgroundColor: determineBestTravelMode() ==
-                                    translation(context).byCar
-                                ? _changeColorTheme600()
-                                : _changeColorTheme50(),
-                            textColor: determineBestTravelMode() ==
-                                    translation(context).byCar
-                                ? Colors.white
-                                : Colors.black,
-                            willArriveOnTime: carArriveInTime(),
-                          ),
+                  suggestionsCallback: (pattern) async {
+                    // Fetch auto-completion suggestions for arrival
+                    final suggestions =
+                        await _getAutoCompletionSuggestions(pattern);
+                    final combinedSuggestions = [
+                      ...searchHistory,
+                      ...suggestions
+                    ];
+                    return combinedSuggestions;
+                  },
+                  itemBuilder: (context, suggestion) {
+                    final bool isHistoryItem =
+                        searchHistory.contains(suggestion);
+                    return ListTile(
+                      leading: LocIcon(suggestion),
+                      title: Text(suggestion.toString()),
+                      tileColor: isHistoryItem ? Colors.grey.shade400 : null,
+                    );
+                  },
+                  onSuggestionSelected: (suggestion) {
+                    end.text = suggestion.toString();
 
-                          const SizedBox(
-                            height: 15,
-                          ),
+                    if (!searchHistory.contains(suggestion.toString())) {
+                      setState(() {
+                        searchHistory.add(suggestion.toString());
+                      });
+                    }
+                  },
+                  noItemsFoundBuilder: (context) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        translation(context).noitem,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors
+                              .grey.shade700, // Adjust the color as needed
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                /*
+                Autocomplete<String>(
+                  optionsBuilder: (TextEditingValue textEditingValue) {
+                    if (textEditingValue.text == '') {
+                      return const Iterable<String>.empty();
+                    } else {
+                      return endSuggestions.where((String option) {
+                        return option
+                            .toLowerCase()
+                            .contains(textEditingValue.text.toLowerCase());
+                      });
+                    }
+                  },
+                  onSelected: (String selection) {
+                    end.text = selection;
+                  },
+                  fieldViewBuilder: (
+                    BuildContext context,
+                    TextEditingController fieldController,
+                    FocusNode focusNode,
+                    VoidCallback onFieldSubmitted,
+                  ) {
+                    return myInput(
+                      controler: end,
+                      hint: translation(context).arrival,
+                    );
+                  },
+                ),
+      
+                myInput(
+                  controler: end,
+                  hint: translation(context).arrival,
+                ),*/
+                const SizedBox(
+                  height: 20,
+                ),
 
-                          // RecommendedItem for Bike
-                          RecommendedItem(
-                            distance:
-                                double.parse(distanceBike.toStringAsFixed(2)),
-                            departure_time: formatDepTime(_depTime),
-                            arrival_time: calculateArrivalTime(
-                                durationBike, formatDepTime(_depTime)),
-                            travelMean: '${translation(context).byBike} 🚲',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ResponsePage(
-                                    routpoints: routpointsBike,
-                                    distance: double.parse(
-                                        distanceBike.toStringAsFixed(2)),
-                                    duration: double.parse(
-                                        durationBike.toStringAsFixed(0)),
-                                    travelMean: translation(context).byBike,
-                                  ),
-                                ),
-                              );
-                            },
-                            backgroundColor: determineBestTravelMode() ==
-                                    translation(context).byBike
-                                ? _changeColorTheme600()
-                                : _changeColorTheme50(),
-                            textColor: determineBestTravelMode() ==
-                                    translation(context).byBike
-                                ? Colors.white
-                                : Colors.black,
-                            willArriveOnTime: bikeArriveInTime(),
-                          ),
-
-                          const SizedBox(
-                            height: 15,
-                          ),
-
-                          // RecommendedItem for Foot
-                          RecommendedItem(
-                            distance:
-                                double.parse(distanceFoot.toStringAsFixed(2)),
-                            departure_time: formatDepTime(_depTime),
-                            arrival_time: calculateArrivalTime(
-                                durationFoot, formatDepTime(_depTime)),
-                            travelMean: '${translation(context).onFoot} 🚶',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ResponsePage(
-                                    routpoints: routpointsFoot,
-                                    duration: double.parse(
-                                        durationFoot.toStringAsFixed(0)),
-                                    distance: double.parse(
-                                        distanceFoot.toStringAsFixed(2)),
-                                    travelMean: translation(context).onFoot,
-                                  ),
-                                ),
-                              );
-                            },
-                            backgroundColor: determineBestTravelMode() ==
-                                    translation(context).onFoot
-                                ? _changeColorTheme600()
-                                : _changeColorTheme50(),
-                            textColor: determineBestTravelMode() ==
-                                    translation(context).onFoot
-                                ? Colors.white
-                                : Colors.black,
-                            willArriveOnTime: footArriveInTime(),
-                          ),
-
-                          const SizedBox(
-                            height: 15,
-                          ),
-
-                          TransitOptions.isNotEmpty
-                              ? TransitOptionsList(
-                                  transitOptions: TransitOptions,
-                                  context: context,
-                                )
-                              : const SizedBox(),
-
-                          const SizedBox(
-                            height: 15,
-                          ),
-                          /*
-                          Container(
-                            padding: const EdgeInsets.all(30),
-                            decoration: BoxDecoration(
-                              color: _changeColorTheme50(),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              arrivalTimeAdvice.join("\n\n"),
-                              textAlign: TextAlign.center,
+                AnimatedSize(
+                  curve: Curves.easeInOut,
+                  duration: const Duration(milliseconds: 800),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    margin: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: _changeColorTheme50(),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              translation(context).options,
                               style: const TextStyle(
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                            SizedBox(
+                              width: widthChanger(),
+                            ),
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: IconButton(
+                                onPressed: toggleOptions,
+                                icon: showOptions
+                                    ? const Icon(Icons.keyboard_arrow_up)
+                                    : const Icon(Icons.keyboard_arrow_down),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Visibility(
+                          visible: showOptions,
+                          maintainAnimation: true,
+                          maintainState: true,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    MaterialButton(
+                                      onPressed: _showDepDatePicker,
+                                      color: _changeColorTheme(),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.calendar_month,
+                                            color: Colors.white,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Text(
+                                              translation(context)
+                                                  .departureDate,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 20,
+                                    ),
+                                    // Display chosen time
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        DateFormat('dd/MM/yyyy')
+                                            .format(_departureDate),
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 4,
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    MaterialButton(
+                                      onPressed: () {
+                                        _showCustomDepTimePicker(context);
+                                      },
+                                      color: _changeColorTheme(),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.access_time,
+                                            color: Colors.white,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Text(
+                                              translation(context)
+                                                  .departureTime,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 20,
+                                    ),
+                                    // Display chosen time
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        _depTime.format(context).toString(),
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 4,
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    MaterialButton(
+                                      onPressed: () {
+                                        _showCustomTimePicker(context);
+                                      },
+                                      color: _changeColorTheme(),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.access_time,
+                                            color: Colors.white,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Padding(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Text(
+                                              translation(context).arrivalTime,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 20,
+                                    ),
+                                    // Display chosen time
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        _timeOfDay.format(context).toString(),
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-      
-                          const SizedBox(
-                            height: 15,
-                          ),
-      */
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
-                          Text(
-                            adviceList.join("\n\n"),
+                const SizedBox(
+                  height: 20,
+                ),
+
+                DropdownButton<String>(
+                  value: selectedPurpose,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedPurpose = newValue!;
+                      print('selectedPurpose variable changed');
+                    });
+                  },
+                  items: _purposeList().map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _changeColorTheme(),
+                    ),
+                    onPressed: () async {
+                      storeRequest();
+                      // Execute getRoute() for different travel modes
+                      await getRouteForTravelMode('car'); // Car
+                      await getRouteForTravelMode('bike'); // Bike
+                      await getRouteForTravelMode('foot'); // Foot
+                      _travelModesArrivingOnTime();
+
+                      final options =
+                          await findPublicTransportOptions(start, end);
+                      setState(() {
+                        TransitOptions = options;
+                      });
+
+                      //const HealthIrregularityChecker();
+                      //_fetchData();
+                      //_generateTestData();
+                      _checkForHealthProblems();
+                      _CalculateHealthWeight();
+                      calculateWeatherWeights();
+
+                      // ignore: use_build_context_synchronously
+                      showDialog(
+                        context: context,
+                        builder: (context) => healthCard(
+                          HealthProblems: HealthProblems,
+                          context: context,
+                        ),
+                      );
+
+                      checkForAdvice();
+                      CalculateDurationWeight();
+                      calculatePurposeWeight();
+                    },
+                    child: Text(translation(context).submit)),
+                const SizedBox(
+                  height: 10,
+                ),
+                SizedBox(
+                  child: Visibility(
+                    visible: isVisible,
+                    child: Column(
+                      children: [
+                        // RecommendedItem for Car
+                        RecommendedItem(
+                          distance:
+                              double.parse(distanceCar.toStringAsFixed(2)),
+                          departure_time: formatDepTime(_depTime),
+                          arrival_time: calculateArrivalTime(
+                              durationCar, formatDepTime(_depTime)),
+                          travelMean: '${translation(context).byCar} 🚗',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ResponsePage(
+                                  routpoints: routpointsCar,
+                                  duration: double.parse(
+                                      durationCar.toStringAsFixed(0)),
+                                  distance: double.parse(
+                                      distanceCar.toStringAsFixed(2)),
+                                  travelMean: translation(context).byCar,
+                                ),
+                              ),
+                            );
+                          },
+                          backgroundColor: determineBestTravelMode() ==
+                                  translation(context).byCar
+                              ? _changeColorTheme600()
+                              : _changeColorTheme50(),
+                          textColor: determineBestTravelMode() ==
+                                  translation(context).byCar
+                              ? Colors.white
+                              : Colors.black,
+                          willArriveOnTime: carArriveInTime(),
+                        ),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        // RecommendedItem for Bike
+                        RecommendedItem(
+                          distance:
+                              double.parse(distanceBike.toStringAsFixed(2)),
+                          departure_time: formatDepTime(_depTime),
+                          arrival_time: calculateArrivalTime(
+                              durationBike, formatDepTime(_depTime)),
+                          travelMean: '${translation(context).byBike} 🚲',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ResponsePage(
+                                  routpoints: routpointsBike,
+                                  distance: double.parse(
+                                      distanceBike.toStringAsFixed(2)),
+                                  duration: double.parse(
+                                      durationBike.toStringAsFixed(0)),
+                                  travelMean: translation(context).byBike,
+                                ),
+                              ),
+                            );
+                          },
+                          backgroundColor: determineBestTravelMode() ==
+                                  translation(context).byBike
+                              ? _changeColorTheme600()
+                              : _changeColorTheme50(),
+                          textColor: determineBestTravelMode() ==
+                                  translation(context).byBike
+                              ? Colors.white
+                              : Colors.black,
+                          willArriveOnTime: bikeArriveInTime(),
+                        ),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        // RecommendedItem for Foot
+                        RecommendedItem(
+                          distance:
+                              double.parse(distanceFoot.toStringAsFixed(2)),
+                          departure_time: formatDepTime(_depTime),
+                          arrival_time: calculateArrivalTime(
+                              durationFoot, formatDepTime(_depTime)),
+                          travelMean: '${translation(context).onFoot} 🚶',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ResponsePage(
+                                  routpoints: routpointsFoot,
+                                  duration: double.parse(
+                                      durationFoot.toStringAsFixed(0)),
+                                  distance: double.parse(
+                                      distanceFoot.toStringAsFixed(2)),
+                                  travelMean: translation(context).onFoot,
+                                ),
+                              ),
+                            );
+                          },
+                          backgroundColor: determineBestTravelMode() ==
+                                  translation(context).onFoot
+                              ? _changeColorTheme600()
+                              : _changeColorTheme50(),
+                          textColor: determineBestTravelMode() ==
+                                  translation(context).onFoot
+                              ? Colors.white
+                              : Colors.black,
+                          willArriveOnTime: footArriveInTime(),
+                        ),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        TransitOptions.isNotEmpty
+                            ? TransitOptionsList(
+                                transitOptions: TransitOptions,
+                                context: context,
+                              )
+                            : const SizedBox(),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        /*
+                        Container(
+                          padding: const EdgeInsets.all(30),
+                          decoration: BoxDecoration(
+                            color: _changeColorTheme50(),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            arrivalTimeAdvice.join("\n\n"),
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                        ),
+      
+                        const SizedBox(
+                          height: 15,
+                        ),
+      */
 
-                          const SizedBox(
-                            height: 5,
+                        Text(
+                          adviceList.join("\n\n"),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
-                      ),
+                        ),
+
+                        const SizedBox(
+                          height: 5,
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
   }
+
+  Widget buildDragHandle() => GestureDetector(
+        child: Center(
+          child: Container(
+            width: 35,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        onTap: () {
+          PanelController().isPanelOpen
+              ? PanelController().close()
+              : PanelController().open();
+        },
+      );
 }

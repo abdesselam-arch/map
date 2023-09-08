@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:map/classes/language_constants.dart';
 import 'package:map/pages/map_page.dart';
 import 'package:map/pages/search_page.dart';
-import 'package:map/pages/settings_page.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 //import 'package:map/components/bottom_nav_bar.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,13 +12,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  /*int _selectedIndex = 0;
 
   void _navigateBottomBar(int index) {
     setState(() {
       _selectedIndex = index;
     });
-  }
+  }*/
 
   String getCurrentLocaleLanguage(BuildContext context) {
     final locale = Localizations.localeOf(context);
@@ -27,29 +26,36 @@ class _HomePageState extends State<HomePage> {
         .languageCode; // Returns the current language code (e.g., 'en' for English)
   }
 
-  Color _changeColorTheme() {
-    final currentLanguage = getCurrentLocaleLanguage(context);
-
-    if (currentLanguage == 'en') {
-      return Colors.red.shade700;
-    } else if (currentLanguage == 'fr') {
-      return Colors.blue.shade700;
-    } else if (currentLanguage == 'ar') {
-      return Colors.green.shade700;
-    }
-
-    return Colors.green.shade700;
-  }
-
-  final List<Widget> _pages = [
-    const MapPage(),
-    const SearchPage(),
-    const SettingsPage(),
-  ];
+  final panelController = PanelController();
+  //static const double fabHeightClosed = 116.0;
+  //double fabHeight = fabHeightClosed;
 
   @override
   Widget build(BuildContext context) {
+    final panelHeightClosed = MediaQuery.of(context).size.height * 0.35;
+    final panelHeightOpen = MediaQuery.of(context).size.height * 0.8;
     return Scaffold(
+      body: Stack(
+        alignment: Alignment.topCenter,
+        children: <Widget>[
+          SlidingUpPanel(
+            controller: panelController,
+            minHeight: panelHeightClosed,
+            maxHeight: panelHeightOpen,
+            parallaxEnabled: true,
+            parallaxOffset: .5,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(18),
+            ),
+            body: const MapPage(),
+            panelBuilder: (controller) => SearchPage(
+              controller: controller,
+              panelcontroller: panelController,
+            ),
+          ),
+        ],
+      ),
+      /*
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: _changeColorTheme(),
@@ -72,7 +78,7 @@ class _HomePageState extends State<HomePage> {
             label: translation(context).settings.toString(),
           ),
         ],
-      ),
+      ),*/
     );
   }
 }

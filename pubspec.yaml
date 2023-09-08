@@ -51,6 +51,7 @@ dependencies:
   health: ^8.0.0
   flutter_typeahead: ^4.6.2
   numberpicker: ^2.1.2
+  sliding_up_panel: ^2.0.0+1
  
   
 dev_dependencies:

@@ -73,5 +73,6 @@
     "min": "minutes",
     "noitem": "aucune adresse trouvée !",
     "selectDepTime": "sélectionner l'heure de départ",
-    "selectArrTime": "sélectionner l'heure d'arrivée"
+    "selectArrTime": "sélectionner l'heure d'arrivée",
+    "wherewego": "On va où ?"
 }

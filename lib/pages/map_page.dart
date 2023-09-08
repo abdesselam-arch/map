@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:map/classes/language_constants.dart';
+import 'package:map/pages/settings_page.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -97,6 +98,29 @@ class _MapPageState extends State<MapPage> {
       return 10;
     } else {
       return 190;
+    }
+  }
+
+  Color _changeColorTheme() {
+    final currentLanguage = getCurrentLocaleLanguage(context);
+
+    if (currentLanguage == 'en') {
+      return Colors.red.shade800;
+    } else if (currentLanguage == 'fr') {
+      return Colors.blue.shade800;
+    } else if (currentLanguage == 'ar') {
+      return Colors.green.shade800;
+    }
+
+    return Colors.green.shade800;
+  }
+
+  double getCurrentLocaleLanguageleftButton(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode == 'en' || locale.languageCode == 'fr') {
+      return 290;
+    } else {
+      return 10;
     }
   }
 
@@ -218,6 +242,22 @@ class _MapPageState extends State<MapPage> {
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 45,
+                      left: getCurrentLocaleLanguageleftButton(context),
+                      child: FloatingActionButton(
+                        onPressed: () {
+                          // Navigate to the SettingsPage when the button is pressed
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SettingsPage()),
+                          );
+                        },
+                        backgroundColor: _changeColorTheme(),
+                        child: const Icon(Icons.settings),
                       ),
                     ),
                   ],

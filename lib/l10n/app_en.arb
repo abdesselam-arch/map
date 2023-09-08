@@ -73,5 +73,6 @@
     "min": "minutes",
     "noitem": "Address not found!",
     "selectDepTime": "Select departure time",
-    "selectArrTime": "Select arrival time"
+    "selectArrTime": "Select arrival time",
+    "wherewego": "where are we going ?"
 }

@@ -73,5 +73,6 @@
     "min": "دقيقة",
     "noitem": "لم يتم العثور على عنوان!",
     "selectDepTime": "حدد وقت المغادرة",
-    "selectArrTime": "حدد وقت الوصول"
+    "selectArrTime": "حدد وقت الوصول",
+    "wherewego": "إلى أين نحن ذاهبون ؟"
 }
