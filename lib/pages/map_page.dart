@@ -27,6 +27,7 @@ class _MapPageState extends State<MapPage> {
   double _longitude = 0.0;
   MapController mapController = MapController();
   int minutes = TimeOfDay.now().minute;
+  int hours = TimeOfDay.now().hour;
 
   Future<void> _getCurrentLocation() async {
     try {
@@ -135,6 +136,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     final String currentLanguage = getCurrentLocaleLanguage(context);
     String formattedMinutes = minutes.toString().padLeft(2, '0');
+    String formattedHours = hours.toString().padLeft(2, '0');
     point = LatLng(_latitude, _longitude);
     return Scaffold(
       body: Center(
@@ -234,7 +236,7 @@ class _MapPageState extends State<MapPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${translation(context).timeOfDay} ${TimeOfDay.now().hour}:$formattedMinutes',
+                              '${translation(context).timeOfDay} $formattedHours:$formattedMinutes',
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -258,6 +260,25 @@ class _MapPageState extends State<MapPage> {
                         },
                         backgroundColor: _changeColorTheme(),
                         child: const Icon(Icons.settings),
+                      ),
+                    ),
+                    // This button might change or go
+                    Positioned(
+                      top: 420,
+                      left: getCurrentLocaleLanguageleftButton(context),
+                      child: Transform.scale(
+                        scale: .85,
+                        child: FloatingActionButton(
+                          onPressed: () {
+                            // Navigate to the SettingsPage when the button is pressed
+                            mapController.move(point, _zoomLevel);
+                          },
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            Icons.my_location_outlined,
+                            color: _changeColorTheme(),
+                          ),
+                        ),
                       ),
                     ),
                   ],

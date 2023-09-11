@@ -211,6 +211,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   FloatingActionButton(
                     onPressed: () {
                       FirebaseAuth.instance.signOut();
+                      Navigator.of(context).pop();
                     },
                     backgroundColor: _changeColorTheme(),
                     child: const Icon(Icons.logout_outlined),

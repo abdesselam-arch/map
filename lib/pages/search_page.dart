@@ -289,8 +289,8 @@ class _SearchPageState extends State<SearchPage> {
         selectedPurpose == 'Travel' ||
         selectedPurpose == 'Shopping' ||
         selectedPurpose == 'Visit') {
-      carPurposeWeight = 0.4; // Moderate weight for car
-      bikePurposeWeight = 0.2; // Moderate weight for biking
+      carPurposeWeight = 0.2; // Moderate weight for car
+      bikePurposeWeight = 0.4; // Moderate weight for biking
       footPurposeWeight = 0.4; // Higher weight for walking, ideal for exploring
     } else if (selectedPurpose == 'Work' ||
         selectedPurpose == 'Education' ||
@@ -519,12 +519,6 @@ class _SearchPageState extends State<SearchPage> {
     double footAlternativeWeight = 0.0;
     double bikeAlternativeWeight = 0.0;
 
-    /*
-    carAlternativeWeight = 0.5;
-    footAlternativeWeight = 0.5;
-    bikeAlternativeWeight = 0.5;
-    */
-
     carAlternativeWeight = (carDurationWeight * durationCondition) +
         (carPurposeWeight * purposeCondition) +
         (healthCriteriaWeight * healthCondition) +
@@ -549,6 +543,10 @@ class _SearchPageState extends State<SearchPage> {
     } else {
       bestTravelMode = translation(context).byBike;
     }
+
+    //carAlternativeWeight = 0.5;
+    footAlternativeWeight = 0.8;
+    //bikeAlternativeWeight = 0.7;
 
     return bestTravelMode;
   }
