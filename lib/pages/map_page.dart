@@ -4,13 +4,16 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:map/classes/language.dart';
 import 'dart:convert';
-
 import 'package:map/classes/language_constants.dart';
+import 'package:map/main.dart';
 import 'package:map/pages/settings_page.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  const MapPage({
+    super.key,
+  });
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -50,6 +53,26 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+/*
+  Future<LatLng> getStartLatLong() async {
+    List<Location> startAddress = await locationFromAddress(start.text);
+
+    var v1 = startAddress[0].latitude;
+    var v2 = startAddress[0].longitude;
+
+    return LatLng(v1, v2);
+  }
+
+  void moveMapToAddress(String address) async {
+    if (address != _getCurrentLocation()) {
+      List<Location> startAddress = await locationFromAddress(address);
+
+      var v1 = startAddress[0].latitude;
+      var v2 = startAddress[0].longitude;
+      mapController.move(LatLng(v1, v2), 15.0);
+    }
+  }
+*/
   void fetchWeatherData() async {
     final apiKey = '9288b0a87c194f099c4a28c2322ca8c0';
     final url =
@@ -78,9 +101,9 @@ class _MapPageState extends State<MapPage> {
   double getCurrentLocaleLanguagedouble(BuildContext context) {
     final locale = Localizations.localeOf(context);
     if (locale.languageCode == 'en' || locale.languageCode == 'fr') {
-      return 170;
+      return 150;
     } else {
-      return 200;
+      return 160;
     }
   }
 
@@ -89,7 +112,7 @@ class _MapPageState extends State<MapPage> {
     if (locale.languageCode == 'en' || locale.languageCode == 'fr') {
       return 10;
     } else {
-      return 145;
+      return 175;
     }
   }
 
@@ -122,6 +145,18 @@ class _MapPageState extends State<MapPage> {
       return 290;
     } else {
       return 10;
+    }
+  }
+
+  String changeText() {
+    final currentLanguage = getCurrentLocaleLanguage(context);
+
+    if (currentLanguage == 'en') {
+      return "🇬🇧";
+    } else if (currentLanguage == 'fr') {
+      return "🇫🇷";
+    } else {
+      return "🇦🇪";
     }
   }
 
@@ -200,10 +235,8 @@ class _MapPageState extends State<MapPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                                '${translation(context).temp} ${temperature.toStringAsFixed(1)}°C'),
-                            const SizedBox(height: 4),
-                            Text(
-                                '${translation(context).descMeteo} $weatherDescription'),
+                              '${temperature.toStringAsFixed(1)}°C, $weatherDescription',
+                            ),
                             const SizedBox(height: 4),
                             if (iconUrl.isNotEmpty)
                               Image.network(
@@ -236,11 +269,7 @@ class _MapPageState extends State<MapPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${translation(context).timeOfDay} $formattedHours:$formattedMinutes',
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${translation(context).date} ${DateFormat('d MMMM y', currentLanguage).format(DateTime.now())}',
+                              '${DateFormat('d MMMM y', currentLanguage).format(DateTime.now())}, $formattedHours:$formattedMinutes',
                             ),
                           ],
                         ),
@@ -262,9 +291,51 @@ class _MapPageState extends State<MapPage> {
                         child: const Icon(Icons.settings),
                       ),
                     ),
+                    Positioned(
+                      top: 115,
+                      left: getCurrentLocaleLanguageleftButton(context) + 5,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _changeColorTheme(),
+                        ),
+                        child: PopupMenuButton<Language>(
+                          itemBuilder: (BuildContext context) {
+                            return Language.languageList()
+                                .map<PopupMenuEntry<Language>>(
+                              (e) {
+                                return PopupMenuItem<Language>(
+                                  value: e,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: <Widget>[
+                                      Text(e.flag),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ).toList();
+                          },
+                          onSelected: (Language? language) async {
+                            // Do something when a language is selected
+                            if (language != null) {
+                              Locale _locale =
+                                  await setLocale(language.languageCode);
+                              MyApp.setLocale(context, _locale);
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.flag_outlined,
+                            size: 30,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                     // This button might change or go
                     Positioned(
-                      top: 420,
+                      top: 417,
                       left: getCurrentLocaleLanguageleftButton(context),
                       child: Transform.scale(
                         scale: .85,

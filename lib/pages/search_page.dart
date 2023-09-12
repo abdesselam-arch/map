@@ -7,13 +7,11 @@ import 'package:health/health.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
-import 'package:map/classes/language.dart';
 import 'package:map/classes/language_constants.dart';
 import 'package:map/components/public_transport_card.dart';
 import 'dart:convert';
 import 'package:map/components/recommended_tem.dart';
 import 'package:map/components/time_picker.dart';
-import 'package:map/main.dart';
 import 'package:map/pages/response_page.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:map/services/health_data_screen.dart';
@@ -1139,51 +1137,6 @@ class _SearchPageState extends State<SearchPage> {
             child: Column(
               children: [
                 buildDragHandle(),
-                Row(
-                  children: [
-                    const SizedBox(
-                      width: 2,
-                    ),
-                    Text(
-                      translation(context).wherewego,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(
-                      width: widthChanger2(),
-                    ),
-                    Container(
-                      alignment: Alignment.topRight,
-                      child: DropdownButton<Language>(
-                        hint: Text(translation(context).changeLanguages),
-                        items: Language.languageList()
-                            .map<DropdownMenuItem<Language>>(
-                              (e) => DropdownMenuItem<Language>(
-                                value: e,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                    Text(e.flag),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (Language? language) async {
-                          //do something
-                          if (language != null) {
-                            Locale _locale =
-                                await setLocale(language.languageCode);
-                            MyApp.setLocale(context, _locale);
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
 
                 const SizedBox(
                   height: 20,
@@ -1375,6 +1328,74 @@ class _SearchPageState extends State<SearchPage> {
                   controler: end,
                   hint: translation(context).arrival,
                 ),*/
+                const SizedBox(
+                  height: 20,
+                ),
+
+                /*const SizedBox(
+                  height: 20,
+                ),*/
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    DropdownButton<String>(
+                      value: selectedPurpose,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedPurpose = newValue!;
+                          print('selectedPurpose variable changed');
+                        });
+                      },
+                      items: _purposeList().map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _changeColorTheme(),
+                      ),
+                      onPressed: () async {
+                        storeRequest();
+                        // Execute getRoute() for different travel modes
+                        await getRouteForTravelMode('car'); // Car
+                        await getRouteForTravelMode('bike'); // Bike
+                        await getRouteForTravelMode('foot'); // Foot
+                        _travelModesArrivingOnTime();
+
+                        final options =
+                            await findPublicTransportOptions(start, end);
+                        setState(() {
+                          TransitOptions = options;
+                        });
+
+                        //const HealthIrregularityChecker();
+                        //_fetchData();
+                        //_generateTestData();
+                        _checkForHealthProblems();
+                        _CalculateHealthWeight();
+                        calculateWeatherWeights();
+
+                        // ignore: use_build_context_synchronously
+                        showDialog(
+                          context: context,
+                          builder: (context) => healthCard(
+                            HealthProblems: HealthProblems,
+                            context: context,
+                          ),
+                        );
+
+                        checkForAdvice();
+                        CalculateDurationWeight();
+                        calculatePurposeWeight();
+                      },
+                      child: Text(translation(context).submit),
+                    ),
+                  ],
+                ),
                 const SizedBox(
                   height: 20,
                 ),
@@ -1606,67 +1627,6 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
 
-                const SizedBox(
-                  height: 20,
-                ),
-
-                DropdownButton<String>(
-                  value: selectedPurpose,
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedPurpose = newValue!;
-                      print('selectedPurpose variable changed');
-                    });
-                  },
-                  items: _purposeList().map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _changeColorTheme(),
-                    ),
-                    onPressed: () async {
-                      storeRequest();
-                      // Execute getRoute() for different travel modes
-                      await getRouteForTravelMode('car'); // Car
-                      await getRouteForTravelMode('bike'); // Bike
-                      await getRouteForTravelMode('foot'); // Foot
-                      _travelModesArrivingOnTime();
-
-                      final options =
-                          await findPublicTransportOptions(start, end);
-                      setState(() {
-                        TransitOptions = options;
-                      });
-
-                      //const HealthIrregularityChecker();
-                      //_fetchData();
-                      //_generateTestData();
-                      _checkForHealthProblems();
-                      _CalculateHealthWeight();
-                      calculateWeatherWeights();
-
-                      // ignore: use_build_context_synchronously
-                      showDialog(
-                        context: context,
-                        builder: (context) => healthCard(
-                          HealthProblems: HealthProblems,
-                          context: context,
-                        ),
-                      );
-
-                      checkForAdvice();
-                      CalculateDurationWeight();
-                      calculatePurposeWeight();
-                    },
-                    child: Text(translation(context).submit)),
                 const SizedBox(
                   height: 10,
                 ),
