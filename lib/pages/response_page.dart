@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:map/classes/language_constants.dart';
 
@@ -8,6 +11,7 @@ class ResponsePage extends StatefulWidget {
   final double duration;
   final double distance;
   final String travelMean;
+  final Icon TravelModeIcon;
 
   const ResponsePage({
     super.key,
@@ -15,6 +19,7 @@ class ResponsePage extends StatefulWidget {
     required this.duration,
     required this.distance,
     required this.travelMean,
+    required this.TravelModeIcon,
   });
 
   @override
@@ -22,7 +27,6 @@ class ResponsePage extends StatefulWidget {
 }
 
 class _ResponsePageState extends State<ResponsePage> {
-  
   String getCurrentLocaleLanguage(BuildContext context) {
     final locale = Localizations.localeOf(context);
     return locale
@@ -41,6 +45,46 @@ class _ResponsePageState extends State<ResponsePage> {
     }
 
     return Colors.green.shade200;
+  }
+
+  List<LatLng> updatePolylines(List<LatLng> routpoints) {
+    List<LatLng> updatedRoutpoints = List.from(routpoints); // Create a copy
+
+    Timer.periodic(Duration(seconds: 1), (timer) async {
+      try {
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+
+        // Check if the user's position matches any coordinate in updatedRoutpoints
+        for (LatLng point in updatedRoutpoints.toList()) {
+          double distanceInMeters = await Geolocator.distanceBetween(
+            position.latitude,
+            position.longitude,
+            point.latitude,
+            point.longitude,
+          );
+
+          // You can adjust the threshold distance as needed
+          if (distanceInMeters < 10) {
+            // Remove the matched point from updatedRoutpoints
+            updatedRoutpoints.remove(point);
+            setState(() {}); // Update the UI to reflect the changes
+            break;
+          }
+        }
+      } catch (e) {
+        print(e);
+      }
+    });
+
+    return updatedRoutpoints;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    updatePolylines(widget.routpoints);
   }
 
   @override
@@ -67,7 +111,7 @@ class _ResponsePageState extends State<ResponsePage> {
                 polylineCulling: false,
                 polylines: [
                   Polyline(
-                    points: routpoints,
+                    points: updatePolylines(routpoints),
                     color: Colors.blue,
                     strokeWidth: 9,
                   ),
@@ -176,7 +220,7 @@ class _ResponsePageState extends State<ResponsePage> {
                   Row(
                     children: [
                       Icon(
-                        Icons.directions_car, // Add your desired icon here
+                        widget.TravelModeIcon.icon, // Add your desired icon here
                         color: Colors.grey.shade800, // Icon color
                       ),
                       const SizedBox(width: 8),

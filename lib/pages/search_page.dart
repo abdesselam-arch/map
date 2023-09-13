@@ -532,6 +532,10 @@ class _SearchPageState extends State<SearchPage> {
         (healthCriteriaWeight * healthCondition) +
         (weatherWeightFoot * weatherCondition);
 
+    //carAlternativeWeight = 0.5;
+    //footAlternativeWeight = 0.8;
+    //bikeAlternativeWeight = 0.7;
+
     if (carAlternativeWeight >= bikeAlternativeWeight &&
         carAlternativeWeight >= footAlternativeWeight) {
       bestTravelMode = translation(context).byCar;
@@ -541,10 +545,6 @@ class _SearchPageState extends State<SearchPage> {
     } else {
       bestTravelMode = translation(context).byBike;
     }
-
-    //carAlternativeWeight = 0.5;
-    footAlternativeWeight = 0.8;
-    //bikeAlternativeWeight = 0.7;
 
     return bestTravelMode;
   }
@@ -1366,12 +1366,6 @@ class _SearchPageState extends State<SearchPage> {
                         await getRouteForTravelMode('foot'); // Foot
                         _travelModesArrivingOnTime();
 
-                        final options =
-                            await findPublicTransportOptions(start, end);
-                        setState(() {
-                          TransitOptions = options;
-                        });
-
                         //const HealthIrregularityChecker();
                         //_fetchData();
                         //_generateTestData();
@@ -1391,6 +1385,12 @@ class _SearchPageState extends State<SearchPage> {
                         checkForAdvice();
                         CalculateDurationWeight();
                         calculatePurposeWeight();
+
+                        final options =
+                            await findPublicTransportOptions(start, end);
+                        setState(() {
+                          TransitOptions = options;
+                        });
                       },
                       child: Text(translation(context).submit),
                     ),
@@ -1654,6 +1654,8 @@ class _SearchPageState extends State<SearchPage> {
                                   distance: double.parse(
                                       distanceCar.toStringAsFixed(2)),
                                   travelMean: translation(context).byCar,
+                                  TravelModeIcon:
+                                      const Icon(Icons.directions_car),
                                 ),
                               ),
                             );
@@ -1692,6 +1694,8 @@ class _SearchPageState extends State<SearchPage> {
                                   duration: double.parse(
                                       durationBike.toStringAsFixed(0)),
                                   travelMean: translation(context).byBike,
+                                  TravelModeIcon:
+                                      const Icon(Icons.directions_bike),
                                 ),
                               ),
                             );
@@ -1730,6 +1734,8 @@ class _SearchPageState extends State<SearchPage> {
                                   distance: double.parse(
                                       distanceFoot.toStringAsFixed(2)),
                                   travelMean: translation(context).onFoot,
+                                  TravelModeIcon:
+                                      const Icon(Icons.directions_walk),
                                 ),
                               ),
                             );
@@ -1815,9 +1821,11 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
         onTap: () {
-          PanelController().isPanelOpen
-              ? PanelController().close()
-              : PanelController().open();
+          if (PanelController().isPanelOpen) {
+            PanelController().close();
+          } else {
+            PanelController().open();
+          }
         },
       );
 }
