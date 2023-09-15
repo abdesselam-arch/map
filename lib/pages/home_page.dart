@@ -3,6 +3,7 @@ import 'package:map/pages/map_page.dart';
 import 'package:map/pages/search_page.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 //import 'package:map/components/bottom_nav_bar.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,6 +21,11 @@ class _HomePageState extends State<HomePage> {
     });
   }*/
 
+  Future<void> requestAuthorization() async {
+    Permission.activityRecognition.request();
+    Permission.location.request();
+  }
+
   String getCurrentLocaleLanguage(BuildContext context) {
     final locale = Localizations.localeOf(context);
     return locale
@@ -29,6 +35,13 @@ class _HomePageState extends State<HomePage> {
   final panelController = PanelController();
   //static const double fabHeightClosed = 116.0;
   //double fabHeight = fabHeightClosed;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    requestAuthorization();
+  }
 
   @override
   Widget build(BuildContext context) {

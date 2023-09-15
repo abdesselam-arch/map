@@ -134,7 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: passwordController,
                     hintText: translation(context).passWord,
                     obscureText: true,
-                    suffixIcon: Icons.password,
+                    suffixIcon: Icons.key,
                     context: context,
                   ),
 
@@ -145,7 +145,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: confirmPasswordController,
                     hintText: translation(context).confirmPassword,
                     obscureText: true,
-                    suffixIcon: Icons.password,
+                    suffixIcon: Icons.key,
                     context: context,
                   ),
 

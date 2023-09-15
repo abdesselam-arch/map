@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                     controller: passwordController,
                     hintText: translation(context).passWord,
                     obscureText: true,
-                    suffixIcon: Icons.password,
+                    suffixIcon: Icons.key,
                     context: context,
                   ),
 
