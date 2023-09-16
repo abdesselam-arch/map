@@ -61,9 +61,14 @@ class _HomePageState extends State<HomePage> {
               top: Radius.circular(18),
             ),
             body: const MapPage(),
-            panelBuilder: (controller) => SearchPage(
-              controller: controller,
-              panelcontroller: panelController,
+            panelBuilder: (controller) => ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(19),
+              ),
+              child: SearchPage(
+                controller: controller,
+                panelcontroller: panelController,
+              ),
             ),
           ),
         ],
