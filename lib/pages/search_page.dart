@@ -45,6 +45,7 @@ class _SearchPageState extends State<SearchPage> {
   double distanceKM = 0;
   double durationMin = 0;
   List<LatLng> routpoints = [const LatLng(52.05884, -1.345583)];
+  List<String> instructions = [];
 
   List<String> HealthProblems = [];
   bool hasHealthProblems = false;
@@ -55,8 +56,8 @@ class _SearchPageState extends State<SearchPage> {
   // Fuzzy AHP Assigned weights for each Criteria
   final double healthCondition = 0.538;
   final double weatherCondition = 0.2625;
-  final double purposeCondition = 0.077;
-  final double durationCondition = 0.121;
+  final double purposeCondition = 0.121;
+  final double durationCondition = 0.077;
 
   // Health Criteria weight
   double healthCriteriaWeight = 0.0;
@@ -499,14 +500,17 @@ class _SearchPageState extends State<SearchPage> {
   double distanceCar = 0;
   double durationCar = 0;
   List<LatLng> routpointsCar = [const LatLng(52.05884, -1.345583)];
+  List<String> instructionsCar = [];
 
   double distanceBike = 0;
   double durationBike = 0;
   List<LatLng> routpointsBike = [const LatLng(52.05884, -1.345583)];
+  List<String> instructionsBike = [];
 
   double distanceFoot = 0;
   double durationFoot = 0;
   List<LatLng> routpointsFoot = [const LatLng(52.05884, -1.345583)];
+  List<String> instructionsFoot = [];
 
   // function to determine the best travelMode (might be deleted later or modified)
 
@@ -658,6 +662,7 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> getRoute(String travelMode) async {
     List<Location> start_l = await locationFromAddress(start.text);
     List<Location> end_l = await locationFromAddress(end.text);
+    final currentLanguage = getCurrentLocaleLanguage(context);
 
     var v1 = start_l[0].latitude;
     var v2 = start_l[0].longitude;
@@ -667,7 +672,7 @@ class _SearchPageState extends State<SearchPage> {
     String apiKey =
         "0fe097c8-8c66-402d-90fb-6cb9ebc27108"; // Replace this with your GraphHopper API key
     var url = Uri.parse(
-        'https://graphhopper.com/api/1/route?point=$v1,$v2&point=$v3,$v4&vehicle=$travelMode&key=$apiKey&type=json&points_encoded=false');
+        'https://graphhopper.com/api/1/route?point=$v1,$v2&point=$v3,$v4&vehicle=$travelMode&key=$apiKey&type=json&points_encoded=false&locale=$currentLanguage');
 
     var response = await http.get(url);
 
@@ -683,6 +688,16 @@ class _SearchPageState extends State<SearchPage> {
       var path = paths[0];
       var distance = path['distance'];
       var duration = path['time'];
+
+      final List<dynamic> rawInstructions = paths[0]['instructions'];
+      List<String> turnByturnInstructions = [];
+
+      for (final instruction in rawInstructions) {
+        final String text = instruction['text'].toString();
+        turnByturnInstructions.add(text);
+      }
+
+      instructions = turnByturnInstructions;
 
       List<LatLng> coordinates = [];
       List<dynamic> rawCoordinates = path['points']['coordinates'];
@@ -713,14 +728,17 @@ class _SearchPageState extends State<SearchPage> {
       distanceCar = distanceKM;
       durationCar = durationMin;
       routpointsCar = List.from(routpoints);
+      instructionsCar = List.from(instructions);
     } else if (travelMode == 'bike') {
       distanceBike = distanceKM;
       durationBike = durationMin;
       routpointsBike = List.from(routpoints);
+      instructionsBike = List.from(instructions);
     } else if (travelMode == 'foot') {
       distanceFoot = distanceKM;
       durationFoot = durationMin;
       routpointsFoot = List.from(routpoints);
+      instructionsFoot = List.from(instructions);
     }
   }
 
@@ -1656,6 +1674,7 @@ class _SearchPageState extends State<SearchPage> {
                                   travelMean: translation(context).byCar,
                                   TravelModeIcon:
                                       const Icon(Icons.directions_car),
+                                  instructions: instructionsCar,
                                 ),
                               ),
                             );
@@ -1696,6 +1715,7 @@ class _SearchPageState extends State<SearchPage> {
                                   travelMean: translation(context).byBike,
                                   TravelModeIcon:
                                       const Icon(Icons.directions_bike),
+                                  instructions: instructionsBike,
                                 ),
                               ),
                             );
@@ -1736,6 +1756,7 @@ class _SearchPageState extends State<SearchPage> {
                                   travelMean: translation(context).onFoot,
                                   TravelModeIcon:
                                       const Icon(Icons.directions_walk),
+                                  instructions: instructionsFoot,
                                 ),
                               ),
                             );
@@ -1794,9 +1815,9 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                           child: Column(
                             children: [
-                              const Text(
-                                'Health Advice list',
-                                style: TextStyle(
+                              Text(
+                                translation(context).healthAdviceList,
+                                style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 10),
@@ -1817,6 +1838,16 @@ class _SearchPageState extends State<SearchPage> {
                       ],
                     ),
                   ),
+                ),
+
+                SizedBox(
+                  height: isVisible ? 5 : 90,
+                ),
+
+                Image.asset(
+                  'images/Aspire+ZayedUni.jpg',
+                  width: 150,
+                  height: 150,
                 ),
               ],
             ),

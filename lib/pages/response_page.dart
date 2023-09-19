@@ -8,6 +8,7 @@ import 'package:map/classes/language_constants.dart';
 
 class ResponsePage extends StatefulWidget {
   final List<LatLng> routpoints;
+  final List<String> instructions;
   final double duration;
   final double distance;
   final String travelMean;
@@ -16,6 +17,7 @@ class ResponsePage extends StatefulWidget {
   const ResponsePage({
     super.key,
     required this.routpoints,
+    required this.instructions,
     required this.duration,
     required this.distance,
     required this.travelMean,
@@ -79,6 +81,37 @@ class _ResponsePageState extends State<ResponsePage> {
     });
 
     return updatedRoutpoints;
+  }
+
+  Icon directionsIcons(int index, List<String> instructions) {
+    if (instructions[index].startsWith("Turn") ||
+        instructions[index].startsWith("Tournez") ||
+        instructions[index].startsWith("استمر") ||
+        instructions[index].startsWith("اتجه")) {
+      if (instructions[index].contains("right") ||
+          instructions[index].contains("droite") ||
+          instructions[index].contains("يمينا") ||
+          instructions[index].contains("اليمين")) {
+        return const Icon(Icons.turn_right);
+      } else {
+        return const Icon(Icons.turn_left);
+      }
+    } else if (instructions[index].startsWith("Keep") ||
+        instructions[index].startsWith("استمر")) {
+      if (instructions[index].contains("right") ||
+          instructions[index].contains("يسارا") ||
+          instructions[index].contains("اليسار")) {
+        return const Icon(Icons.turn_right);
+      } else {
+        return const Icon(Icons.turn_left);
+      }
+    } else if (instructions[index].contains('Arrive') ||
+        instructions[index].contains("Arrivée") ||
+        instructions[index].contains("النهاية")) {
+      return const Icon(Icons.location_searching);
+    } else {
+      return const Icon(Icons.straight);
+    }
   }
 
   @override
@@ -162,76 +195,121 @@ class _ResponsePageState extends State<ResponsePage> {
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.info, // Add your desired icon here
-                        color: Colors.white, // Icon color
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.info, // Add your desired icon here
+                            color: Colors.white, // Icon color
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            translation(context).routeInfos,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        translation(context).routeInfos,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on, // Add your desired icon here
+                            color: Colors.grey.shade800, // Icon color
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${translation(context).distance} $distance ${translation(context).km}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.timer, // Add your desired icon here
+                            color: Colors.grey.shade800, // Icon color
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${translation(context).duration} $duration ${translation(context).min}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            widget.TravelModeIcon
+                                .icon, // Add your desired icon here
+                            color: Colors.grey.shade800, // Icon color
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${translation(context).travelMean} $travelMean',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade800,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.location_on, // Add your desired icon here
-                        color: Colors.grey.shade800, // Icon color
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${translation(context).distance} $distance ${translation(context).km}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.timer, // Add your desired icon here
-                        color: Colors.grey.shade800, // Icon color
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${translation(context).duration} $duration ${translation(context).min}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        widget.TravelModeIcon.icon, // Add your desired icon here
-                        color: Colors.grey.shade800, // Icon color
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${translation(context).travelMean} $travelMean',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                    ],
+                  IconButton(
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                                title: Text(
+                                  translation(context).instructions,
+                                ),
+                                content: SizedBox(
+                                  width: 350,
+                                  height: 400,
+                                  child: ListView.builder(
+                                    itemCount: widget.instructions.length,
+                                    itemBuilder: (context, index) {
+                                      final instruction =
+                                          widget.instructions[index];
+                                      return ListTile(
+                                        leading: CircleAvatar(
+                                          backgroundColor:
+                                              _changeColorTheme50(),
+                                          child: Icon(
+                                            directionsIcons(
+                                                    index, widget.instructions)
+                                                .icon,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        title: Text(instruction),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ));
+                    },
+                    icon: Icon(
+                      Icons.route,
+                      color: Colors.grey.shade800,
+                    ),
                   ),
                 ],
               ),

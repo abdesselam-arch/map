@@ -74,5 +74,7 @@
     "noitem": "Address not found!",
     "selectDepTime": "Select departure time",
     "selectArrTime": "Select arrival time",
-    "wherewego": "where are we going ?"
+    "wherewego": "where are we going ?",
+    "healthAdviceList": "Health advice list",
+    "instructions": "Instructions"
 }

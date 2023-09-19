@@ -74,5 +74,7 @@
     "noitem": "aucune adresse trouvée !",
     "selectDepTime": "sélectionner l'heure de départ",
     "selectArrTime": "sélectionner l'heure d'arrivée",
-    "wherewego": "On va où ?"
+    "wherewego": "On va où ?",
+    "healthAdviceList": "liste de conseils santé",
+    "instructions": "Instructions d'itinéraire"
 }

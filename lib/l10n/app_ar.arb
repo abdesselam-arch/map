@@ -74,5 +74,7 @@
     "noitem": "لم يتم العثور على عنوان!",
     "selectDepTime": "حدد وقت المغادرة",
     "selectArrTime": "حدد وقت الوصول",
-    "wherewego": "إلى أين نحن ذاهبون ؟"
+    "wherewego": "إلى أين نحن ذاهبون ؟",
+    "healthAdviceList": "قائمة النصائح الصحية",
+    "instructions": "تعليمات الطريق"
 }

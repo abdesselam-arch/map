@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
@@ -160,6 +161,23 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  Future<void> searchLocation(
+      String address, MapController mapController) async {
+    try {
+      List<Location> locations = await locationFromAddress(address);
+      if (locations.isNotEmpty) {
+        Location location = locations.first;
+        LatLng point = LatLng(location.latitude, location.longitude);
+        mapController.move(point, 15.0);
+        // You can also add a marker at the searched location if needed.
+      } else {
+        print('Location not found for: $address');
+      }
+    } catch (e) {
+      print('Error searching location: $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -184,12 +202,12 @@ class _MapPageState extends State<MapPage> {
                     FlutterMap(
                       mapController: mapController,
                       options: MapOptions(
-                        onTap: (p, LatLng) async {
+                        /*onTap: (p, LatLng) async {
                           setState(() {
                             point = LatLng;
                             fetchWeatherData();
                           });
-                        },
+                        },*/
                         center: point,
                         zoom: _zoomLevel,
                       ),

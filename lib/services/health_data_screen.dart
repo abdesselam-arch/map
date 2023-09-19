@@ -196,32 +196,37 @@ Widget healthCard({
   required final List<String> HealthProblems,
   required final BuildContext context,
 }) {
-  return Dialog(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-    child: Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            translation(context).healthProblemsDetected,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: HealthProblems.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(HealthProblems[index]),
-              );
-            },
-          ),
-        ],
+  return ScrollConfiguration(
+    behavior: const ScrollBehavior().copyWith(
+      overscroll: false,
+    ),
+    child: Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              translation(context).healthProblemsDetected,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: HealthProblems.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(HealthProblems[index]),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     ),
   );
