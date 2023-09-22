@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:map/classes/language_constants.dart';
-import 'package:map/components/public_transport_card.dart';
+//import 'package:map/components/public_transport_card.dart';
 import 'dart:convert';
 import 'package:map/components/recommended_tem.dart';
 import 'package:map/components/time_picker.dart';
@@ -455,7 +455,7 @@ class _SearchPageState extends State<SearchPage> {
     steps =
         (8000); // Generates a random number of steps between 2000 and 10000.
     bodyTemp =
-        (36.5); // Generates a random body temperature between 35.5 and 37.5 degrees Celsius.
+        (37); // Generates a random body temperature between 35.5 and 37.5 degrees Celsius.
     bloodGlucose =
         (70); // Generates a random blood glucose level between 70 and 120 mg/dL.
     respRate =
@@ -481,6 +481,9 @@ class _SearchPageState extends State<SearchPage> {
     }
     if (bloodOxy! < 95) {
       adviceList.add(translation(context).bloodOxyAdvice);
+    }
+    if (bodyTemp! > 37) {
+      adviceList.add(translation(context).bodyTempAdvice);
     }
 
     if (adviceList.isEmpty) {
@@ -1031,7 +1034,7 @@ class _SearchPageState extends State<SearchPage> {
     start.addListener(onStartTextChanged);
     end.addListener(onEndTextChanged);
     _fetchData();
-    _generateTestData();
+    //_generateTestData();
     fetchWeatherData(end, _departureDate);
     //_checkForHealthProblems();
     //_CalculateHealthWeight();
@@ -1386,7 +1389,7 @@ class _SearchPageState extends State<SearchPage> {
 
                         //const HealthIrregularityChecker();
                         //_fetchData();
-                        //_generateTestData();
+                        _generateTestData();
                         _checkForHealthProblems();
                         _CalculateHealthWeight();
                         calculateWeatherWeights();
@@ -1775,7 +1778,7 @@ class _SearchPageState extends State<SearchPage> {
                         const SizedBox(
                           height: 15,
                         ),
-
+/*
                         TransitOptions.isNotEmpty
                             ? TransitOptionsList(
                                 transitOptions: TransitOptions,
@@ -1786,6 +1789,7 @@ class _SearchPageState extends State<SearchPage> {
                         const SizedBox(
                           height: 15,
                         ),
+*/
                         /*
                         Container(
                           padding: const EdgeInsets.all(30),

@@ -49,6 +49,7 @@
     "bloodPressureAdvice": "Your blood pressure is high. Avoid strenuous activities and travel.",
     "bloodGlucoseAdvice": "Your blood glucose level is high. Monitor your diet and consider avoiding sugary foods.",
     "bloodOxyAdvice": "Your blood oxygen level is low. Consider resting and staying indoors.",
+    "bodyTempAdvice": "Your temperature is currently high, consider resting and not going out.",
     "healthConditionnormal": "Your health condition seems to be normal. Keep up the good work!",
     "heartRate": "Heart rate: ",
     "bodyTemp": "Body temparture: ",

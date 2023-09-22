@@ -70,8 +70,10 @@ class _ResponsePageState extends State<ResponsePage> {
           // You can adjust the threshold distance as needed
           if (distanceInMeters < 10) {
             // Remove the matched point from updatedRoutpoints
-            updatedRoutpoints.remove(point);
-            setState(() {}); // Update the UI to reflect the changes
+            //updatedRoutpoints.remove(point);
+            setState(() {
+              updatedRoutpoints.remove(point);
+            }); // Update the UI to reflect the changes
             break;
           }
         }

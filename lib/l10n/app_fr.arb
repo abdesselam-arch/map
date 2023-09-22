@@ -49,6 +49,7 @@
     "bloodPressureAdvice": "Votre tension artérielle est élevée. Évitez les activités intenses et les voyages.",
     "bloodGlucoseAdvice": "Votre glycémie est élevée. Surveillez votre alimentation et envisagez d'éviter les aliments sucrés.",
     "bloodOxyAdvice": "Votre niveau d'oxygène dans le sang est faible. Pensez à vous reposer et à rester à l'intérieur.",
+    "bodyTempAdvice": "Votre température est actuellement élevée, pensez à vous reposer et à ne pas sortir.",
     "healthConditionnormal": "Votre état de santé semble normal. Continuez votre bon travail !",
     "heartRate": "Rythme cardiaque: ",
     "bodyTemp": "Température corporelle: ",
