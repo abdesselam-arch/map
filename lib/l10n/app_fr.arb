@@ -77,5 +77,6 @@
     "selectArrTime": "sélectionner l'heure d'arrivée",
     "wherewego": "On va où ?",
     "healthAdviceList": "liste de conseils santé",
-    "instructions": "Instructions d'itinéraire"
+    "instructions": "Instructions d'itinéraire",
+    "changePurpose": "Changer la raison"
 }

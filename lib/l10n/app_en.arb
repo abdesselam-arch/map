@@ -77,5 +77,6 @@
     "selectArrTime": "Select arrival time",
     "wherewego": "where are we going ?",
     "healthAdviceList": "Health advice list",
-    "instructions": "Instructions"
+    "instructions": "Instructions",
+    "changePurpose": "Change purpose"
 }

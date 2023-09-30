@@ -77,5 +77,6 @@
     "selectArrTime": "حدد وقت الوصول",
     "wherewego": "إلى أين نحن ذاهبون ؟",
     "healthAdviceList": "قائمة النصائح الصحية",
-    "instructions": "تعليمات الطريق"
+    "instructions": "تعليمات الطريق",
+    "changePurpose": "غير السبب"
 }

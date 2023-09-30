@@ -560,15 +560,14 @@ class _SearchPageState extends State<SearchPage> {
 
   List<String> _purposeList() {
     List<String> purposeOptions = [
-      'Purpose',
-      'Travel',
-      'Education',
-      'Visit',
-      'Shopping',
-      'Medical condition',
-      'Work',
-      'Vacation',
-      'Other'
+      translation(context).travel,
+      translation(context).education,
+      translation(context).visit,
+      translation(context).shopping,
+      translation(context).medical,
+      translation(context).work,
+      translation(context).vacation,
+      translation(context).other
     ];
 
     initialPurpose = translation(context).purposeField;
@@ -576,7 +575,7 @@ class _SearchPageState extends State<SearchPage> {
     return purposeOptions;
   }
 
-  String selectedPurpose = 'Purpose';
+  String selectedPurpose = '';
 
   void storeRequest() async {
     await requests.add({
@@ -1144,6 +1143,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    //selectedPurpose = translation(context).purposeField;
     var controller = widget.controller;
     return Scaffold(
       backgroundColor: Colors.white,
@@ -1361,7 +1361,8 @@ class _SearchPageState extends State<SearchPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     DropdownButton<String>(
-                      value: selectedPurpose,
+                      //value: selectedPurpose,
+                      hint: Text(translation(context).changePurpose),
                       onChanged: (String? newValue) {
                         setState(() {
                           selectedPurpose = newValue!;
@@ -1371,7 +1372,14 @@ class _SearchPageState extends State<SearchPage> {
                       items: _purposeList().map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value),
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              fontWeight: selectedPurpose == value
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
                         );
                       }).toList(),
                     ),
@@ -1656,6 +1664,18 @@ class _SearchPageState extends State<SearchPage> {
                     visible: isVisible,
                     child: Column(
                       children: [
+/*
+                        Text( 
+                          'The purpose: $selectedPurpose',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: 10,
+                        ),
+*/
                         // RecommendedItem for Car
                         RecommendedItem(
                           distance:
