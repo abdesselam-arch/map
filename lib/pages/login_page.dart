@@ -19,6 +19,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  bool isHiddenPassword = true;
 
   //sign in methode
   void signIn() async {
@@ -54,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-    String getCurrentLocaleLanguage(BuildContext context) {
+  String getCurrentLocaleLanguage(BuildContext context) {
     final locale = Localizations.localeOf(context);
     return locale
         .languageCode; // Returns the current language code (e.g., 'en' for English)
@@ -107,7 +108,10 @@ class _LoginPageState extends State<LoginPage> {
                     controller: emailController,
                     hintText: translation(context).email,
                     obscureText: false,
-                    suffixIcon: Icons.mail,
+                    suffixIcon: IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.mail),
+                    ),
                     context: context,
                   ),
 
@@ -117,8 +121,17 @@ class _LoginPageState extends State<LoginPage> {
                   MyTextField(
                     controller: passwordController,
                     hintText: translation(context).passWord,
-                    obscureText: true,
-                    suffixIcon: Icons.key,
+                    obscureText: isHiddenPassword,
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isHiddenPassword = !isHiddenPassword;
+                        });
+                      },
+                      icon: isHiddenPassword
+                          ? const Icon(Icons.visibility_off)
+                          : const Icon(Icons.visibility),
+                    ),
                     context: context,
                   ),
 

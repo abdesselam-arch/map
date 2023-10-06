@@ -84,7 +84,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
               controller: emailController,
               hintText: translation(context).email,
               obscureText: false,
-              suffixIcon: Icons.outgoing_mail,
+              suffixIcon: IconButton(onPressed: () {}, icon: const Icon(Icons.outgoing_mail)),
               context: context,
             ),
           ),

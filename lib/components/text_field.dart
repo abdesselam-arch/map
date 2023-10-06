@@ -4,7 +4,7 @@ class MyTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final bool obscureText;
-  final IconData suffixIcon;
+  final IconButton suffixIcon;
   final BuildContext context;
 
   const MyTextField({
@@ -62,7 +62,7 @@ class MyTextField extends StatelessWidget {
               color: _changeColorTheme600(),
             ),
           ),
-          suffixIcon: Icon(suffixIcon),
+          suffixIcon: suffixIcon,
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
             borderSide: BorderSide(
