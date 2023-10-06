@@ -32,7 +32,7 @@
             </intent>
     </queries>
     <application
-        android:label="Tanakul-Dhaki"
+        android:label="Tadh"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

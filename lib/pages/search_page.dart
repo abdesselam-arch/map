@@ -280,23 +280,27 @@ class _SearchPageState extends State<SearchPage> {
 
   // Function to calculate the purpose criteria weight
   double calculatePurposeWeight() {
-    if (selectedPurpose == 'Medical condition') {
+    if (selectedPurpose == translation(context).medical) {
       carPurposeWeight = 0.5;
       footPurposeWeight = 0.2;
       bikePurposeWeight = 0.3;
-    } else if (selectedPurpose == 'Vacation' ||
-        selectedPurpose == 'Travel' ||
-        selectedPurpose == 'Shopping' ||
-        selectedPurpose == 'Visit') {
+    } else if (selectedPurpose == translation(context).vacation ||
+        selectedPurpose == translation(context).travel ||
+        selectedPurpose == translation(context).shopping ||
+        selectedPurpose == translation(context).visit) {
       carPurposeWeight = 0.2; // Moderate weight for car
       bikePurposeWeight = 0.4; // Moderate weight for biking
       footPurposeWeight = 0.4; // Higher weight for walking, ideal for exploring
-    } else if (selectedPurpose == 'Work' ||
-        selectedPurpose == 'Education' ||
-        selectedPurpose == 'Other') {
+    } else if (selectedPurpose == translation(context).work ||
+        selectedPurpose == translation(context).education ||
+        selectedPurpose == translation(context).other) {
       carPurposeWeight = 0.5; // Moderate weight for car
       footPurposeWeight = 0.25; // Moderate weight for walking
       bikePurposeWeight = 0.25; // Moderate weight for biking
+    } else if(selectedPurpose == translation(context).delivery) {
+      carPurposeWeight = 0.4;
+      bikePurposeWeight = 0.6;
+      footPurposeWeight = 0.2;
     }
     print('the purpose criteria weight using a car: $carPurposeWeight');
     print('the purpose criteria weight on foot: $footPurposeWeight');
@@ -566,6 +570,7 @@ class _SearchPageState extends State<SearchPage> {
       translation(context).shopping,
       translation(context).medical,
       translation(context).work,
+      translation(context).delivery,
       translation(context).vacation,
       translation(context).other
     ];
@@ -1421,7 +1426,7 @@ class _SearchPageState extends State<SearchPage> {
                           TransitOptions = options;
                         });
                       },
-                      child: Text(translation(context).submit),
+                      child: Text(translation(context).search),
                     ),
                   ],
                 ),
