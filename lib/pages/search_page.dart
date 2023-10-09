@@ -297,7 +297,7 @@ class _SearchPageState extends State<SearchPage> {
       carPurposeWeight = 0.5; // Moderate weight for car
       footPurposeWeight = 0.25; // Moderate weight for walking
       bikePurposeWeight = 0.25; // Moderate weight for biking
-    } else if(selectedPurpose == translation(context).delivery) {
+    } else if (selectedPurpose == translation(context).delivery) {
       carPurposeWeight = 0.4;
       bikePurposeWeight = 0.6;
       footPurposeWeight = 0.2;
@@ -519,6 +519,12 @@ class _SearchPageState extends State<SearchPage> {
   List<LatLng> routpointsFoot = [const LatLng(52.05884, -1.345583)];
   List<String> instructionsFoot = [];
 
+  // scooter profile (working on it)
+  double distanceScooter = 0;
+  double durationScooter = 0;
+  List<LatLng> routpointsScooter = [const LatLng(52.05884, -1.345583)];
+  List<String> instructionsScooter = [];
+
   // function to determine the best travelMode (might be deleted later or modified)
 
   String determineBestTravelMode() {
@@ -666,6 +672,13 @@ class _SearchPageState extends State<SearchPage> {
 
   */
 
+/*
+  Future<Map<String, dynamic>> loadCustomProfile() async {
+    final jsonString = await rootBundle.loadString('assets/scooter_mode.json');
+    final jsonMap = json.decode(jsonString);
+    return jsonMap;
+  }
+*/
   Future<void> getRoute(String travelMode) async {
     List<Location> start_l = await locationFromAddress(start.text);
     List<Location> end_l = await locationFromAddress(end.text);

@@ -1,0 +1,18 @@
+{
+    "name": "scooter",
+    "vehicle_type": "scooter",
+    "average_speed": 20,
+    "max_speed": 30,     
+    "engine_power": 2,   
+    "weight": 100,       
+    "dimensions": {
+      "width": 0.6,      
+      "length": 1.5,    
+      "height": 1.2    
+    },
+    "turning_circle": 2, 
+    "attributes": {
+      "scooter": true
+    }
+  }
+  
